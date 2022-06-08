@@ -36,3 +36,12 @@ wd.add_qualifier(repo, statement, "P100", value)
 # add and remove qualifier
 wd.add_qualifier(repo, statement, "P207", "def")
 wd.remove_qualifier(item, "P131", "P207")
+# add references
+value = pywikibot.ItemPage(repo, "Q202473")
+wd.add_reference(repo, statement, "P149", value)
+wd.add_reference_date(repo, statement, "P146")
+wd.add_reference_date(repo, statement, "P146", date(2022, 1, 9))
+# add and remove references
+wd.add_reference(repo, statement, "P207", "aaa")
+wd.add_reference(repo, statement, "P207", "bbb")
+wd.remove_reference(item, "P131", "P207")

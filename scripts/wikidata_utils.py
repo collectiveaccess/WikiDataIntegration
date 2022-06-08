@@ -119,3 +119,41 @@ def remove_qualifier(item, statement_property, qualifier_property):
                 claim.removeQualifier(qualifier, summary="Remove qualifier.")
             except:
                 print(f"WARNING: could not delete qualifier {qualifier_property}")
+
+
+def add_reference(repo, claim, property, value):
+    for source in claim.getSources():
+        if property in source:
+            for old_claim in source[property]:
+                if old_claim.getTarget() == value:
+                    return old_claim
+
+    new_source = pywikibot.Claim(repo, property)
+    new_source.setTarget(value)
+    claim.addSources([new_source], summary="Adding sources.")
+
+
+def add_reference_date(repo, claim, property, source_date=date.today()):
+    value = pywikibot.WbTime(
+        year=int(source_date.strftime("%Y")),
+        month=int(source_date.strftime("%m")),
+        day=int(source_date.strftime("%d")),
+    )
+    add_reference(repo, claim, property, value)
+
+
+def remove_reference(item, statement_property, reference_property):
+    if statement_property not in item.claims:
+        return
+
+    sources = []
+    for claim in item.claims[statement_property]:
+        for old_source in claim.getSources():
+            for old_claims in old_source.values():
+                for old_claim in old_claims:
+                    # import pdb; pdb.set_trace()
+                    if old_claim.getID() == reference_property:
+                        sources.append(old_claim)
+
+    if len(sources) > 0:
+        claim.removeSources(sources, summary="Removed source(s).")
