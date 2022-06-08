@@ -68,3 +68,54 @@ def edit_sitelink(item, site, title):
 
 def remove_sitelink(item, site):
     item.removeSitelink(site)
+
+
+def add_statement(repo, item, property, value):
+    # return claim if it exists
+    if property in item.claims:
+        for claim in item.claims[property]:
+            if claim.getTarget() == value:
+                return claim
+
+    # create new claim
+    new_claim = pywikibot.Claim(repo, property)
+    new_claim.setTarget(value)
+    item.addClaim(new_claim, summary="Add claim.")
+    return new_claim
+
+
+def remove_statement(item, property):
+    if property not in item.claims:
+        return
+
+    for claim in item.claims[property]:
+        item.removeClaims(claim, summary="Remove claim.")
+
+
+def add_qualifier(repo, claim, property, value):
+    # return qualifier if it exists
+    if property in claim.qualifiers:
+        for qualifier in claim.qualifiers[property]:
+            if qualifier.getTarget() == value:
+                return qualifier
+
+    # create new qualifier
+    new_qualifier = pywikibot.Claim(repo, property)
+    new_qualifier.setTarget(value)
+    claim.addQualifier(new_qualifier, summary="Add qualifier.")
+    return new_qualifier
+
+
+def remove_qualifier(item, statement_property, qualifier_property):
+    if statement_property not in item.claims:
+        return
+
+    for claim in item.claims[statement_property]:
+        if qualifier_property not in claim.qualifiers:
+            continue
+
+        for qualifier in claim.qualifiers[qualifier_property]:
+            try:
+                claim.removeQualifier(qualifier, summary="Remove qualifier.")
+            except:
+                print(f"WARNING: could not delete qualifier {qualifier_property}")
