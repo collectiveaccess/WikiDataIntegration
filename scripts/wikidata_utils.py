@@ -44,3 +44,27 @@ def process_item_exists_results(results):
                 }
             )
         return tmp
+
+
+def edit_labels(item, new_labels):
+    for lang, value in new_labels.items():
+        item.editLabels(labels={lang: value}, summary=f"Setting label: {value}")
+
+
+def edit_descriptions(item, new_descriptions):
+    for lang, value in new_descriptions.items():
+        item.editDescriptions({lang: value}, summary=f"Setting description: {value}")
+
+
+def edit_aliases(item, new_alias):
+    for lang, value in new_alias.items():
+        item.editAliases({lang: value}, summary=f"Set aliases: {value}")
+
+
+def edit_sitelink(item, site, title):
+    sitedict = {"site": site, "title": title}
+    item.setSitelink(sitedict, summary=f"Set sitelink: {title}")
+
+
+def remove_sitelink(item, site):
+    item.removeSitelink(site)
