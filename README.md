@@ -12,6 +12,7 @@ WikiData integration tests
 requires Python 3.8.2+
 
 ```bash
+pip install -U setuptools
 pip install -r requirements.txt
 ```
 
