@@ -9,7 +9,7 @@ WikiData integration tests
 
 3. install libraries
 
-requires Python 3.8.2+
+requires Python 3.6.8+
 
 ```bash
 pip install -U setuptools
