@@ -1,8 +1,8 @@
-wikidata.org id,label,description
-Q54675116,McCarter Theatre Center for the Performing Arts,American nonprofit organization
-Q72912,Brooklyn Academy of Music,"theater and concert hall in Brooklyn, New York City, United States"
-Q45031924,BAM Rose Cinemas,"movie theater in Fort Greene, Brooklyn, New York City, United States"
-Q34811218,Brooklyn Academy of Music Historic District,park in the United States of America
-Q2527311,Wexner Center for the Arts,center at Ohio State University
-Q4820851,August Wilson African American Cultural Center,"theater and museum in Pittsburgh, Pennsylvania"
-Q7896439,University of Texas Performing Arts Center,"performing arts center in Austin, Texas, United States"
+wikidata.org id,label,description,id
+Q54675116,McCarter Theatre Center for the Performing Arts,American nonprofit organization,Q278
+Q72912,Brooklyn Academy of Music,"theater and concert hall in Brooklyn, New York City, United States",Q279
+Q45031924,BAM Rose Cinemas,"movie theater in Fort Greene, Brooklyn, New York City, United States",Q280
+Q34811218,Brooklyn Academy of Music Historic District,park in the United States of America,Q281
+Q2527311,Wexner Center for the Arts,center at Ohio State University,Q282
+Q4820851,August Wilson African American Cultural Center,"theater and museum in Pittsburgh, Pennsylvania",Q283
+Q7896439,University of Texas Performing Arts Center,"performing arts center in Austin, Texas, United States",Q284

@@ -1,36 +1,36 @@
-wikidata.org id,label,description
-Q16973731,Dianne McIntyre,American dancer and choreographer
-Q6109395,Robert Battle,Argentinian basketball player
-Q7341937,Robert Battle,"choreographer, ballet company director"
-Q100980162,Robert Battle,college basketball player (1996–1996) Texas-Rio Grande Valley
-Q110511767,Robert Battle,American genealogist
-Q4878310,Bebe Miller,American dancer
-Q5294846,Donald McKayle,American dancer
-Q81593282,"Donald McKayle, 87, Broadway and Modern Dance Choreographer, Dies",obituary in the New York Times
-Q107425418,Reggie Wilson,American choreographer
-Q100959888,Reggie Wilson,college basketball player (1991–1992) Illinois State
-Q7308333,Reggie Wilson/Fist and Heel Performance Group,
-Q60350738,Andrea Woodson-Smith,Wheelchair Basketball
-Q86095846,David Roussève,"American choreographer, writer, director, and performer"
-Q7313336,Rennie Harris,American choreographer
-Q7313337,Rennie Harrison,footballer (1897-?)
-Q6166129,Jawole Willa Jo Zollar,"American dancer, teacher and choreographer of modern dance"
-Q155538,Pina Bausch,"German dancer, choreographer, dance teacher and ballet director"
-Q3235250,Dancing Dreams,2010 film by Rainer Hoffmann and Anne Linsel
-Q1828040,Pina Bausch - Lissabon Wuppertal Lisboa,1998 film by Fernando Lopes
-Q55349210,Pina Bausch and the Tanztheater,exhibition
-Q487604,Martha Graham,American dancer and choreographer
-Q47511112,Martha Graham,painting by Elizabeth Montgomery
-Q47511412,Martha Graham,painting by Paul R. Meltsner
-Q2301443,Martha Graham,American supercentenarian
-Q47661534,Martha Graham,photograph by Yousuf Karsh
-Q75399130,Martha Graham,(born 1647)
-Q77920550,Martha Graham,painting by Mark Tobey
-Q711688,Mark Morris,American ballet dancer and choreographer
-Q6768940,Mark Morris,author
-Q59672659,Mark Morris,researcher ORCID ID = 0000-0002-6753-2066
-Q10378627,Mark Morris,professional footballer born 1962
-Q6768944,Mark Morris,British footballer (born 1968)
-Q16192850,Mark Morris,American ice hockey defenceman and coach
-Q6768942,Mark Morris,Wikimedia disambiguation page
-Q11968140,Eva Henriette Mohn,Norwegian sexologist
+wikidata.org id,label,description,id
+Q16973731,Dianne McIntyre,American dancer and choreographer,Q243
+Q6109395,Robert Battle,Argentinian basketball player,Q244
+Q7341937,Robert Battle,"choreographer, ballet company director",Q245
+Q100980162,Robert Battle,college basketball player (1996–1996) Texas-Rio Grande Valley,Q246
+Q110511767,Robert Battle,American genealogist,Q247
+Q4878310,Bebe Miller,American dancer,Q248
+Q5294846,Donald McKayle,American dancer,Q249
+Q81593282,"Donald McKayle, 87, Broadway and Modern Dance Choreographer, Dies",obituary in the New York Times,Q250
+Q107425418,Reggie Wilson,American choreographer,Q251
+Q100959888,Reggie Wilson,college basketball player (1991–1992) Illinois State,Q252
+Q7308333,Reggie Wilson/Fist and Heel Performance Group,,Q253
+Q60350738,Andrea Woodson-Smith,Wheelchair Basketball,Q254
+Q86095846,David Roussève,"American choreographer, writer, director, and performer",Q255
+Q7313336,Rennie Harris,American choreographer,Q256
+Q7313337,Rennie Harrison,footballer (1897-?),Q257
+Q6166129,Jawole Willa Jo Zollar,"American dancer, teacher and choreographer of modern dance",Q258
+Q155538,Pina Bausch,"German dancer, choreographer, dance teacher and ballet director",Q259
+Q3235250,Dancing Dreams,2010 film by Rainer Hoffmann and Anne Linsel,Q260
+Q1828040,Pina Bausch - Lissabon Wuppertal Lisboa,1998 film by Fernando Lopes,Q261
+Q55349210,Pina Bausch and the Tanztheater,exhibition,Q262
+Q487604,Martha Graham,American dancer and choreographer,Q263
+Q47511112,Martha Graham,painting by Elizabeth Montgomery,Q264
+Q47511412,Martha Graham,painting by Paul R. Meltsner,Q265
+Q2301443,Martha Graham,American supercentenarian,Q266
+Q47661534,Martha Graham,photograph by Yousuf Karsh,Q267
+Q75399130,Martha Graham,(born 1647),Q268
+Q77920550,Martha Graham,painting by Mark Tobey,Q269
+Q711688,Mark Morris,American ballet dancer and choreographer,Q270
+Q6768940,Mark Morris,author,Q271
+Q59672659,Mark Morris,researcher ORCID ID = 0000-0002-6753-2066,Q272
+Q10378627,Mark Morris,professional footballer born 1962,Q273
+Q6768944,Mark Morris,British footballer (born 1968),Q274
+Q16192850,Mark Morris,American ice hockey defenceman and coach,Q275
+Q6768942,Mark Morris,Wikimedia disambiguation page,Q276
+Q11968140,Eva Henriette Mohn,Norwegian sexologist,Q277

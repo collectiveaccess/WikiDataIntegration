@@ -159,3 +159,20 @@ def remove_reference(item, statement_property, reference_property):
 
     if len(sources) > 0:
         claim.removeSources(sources, summary="Removed source(s).")
+
+
+def import_item(site, item_dict, import_sitelinks):
+    data = {}
+    for key in item_dict.keys():
+        if key in ['labels', 'descriptions', 'aliases']:
+            if len(item_dict[key]) > 0:
+                data[key] = {k: v for k, v in item_dict[key].items()}
+        elif key == 'sitelinks':
+            if import_sitelinks and len(item_dict[key]) > 0:
+                data[key] = [{k: v.title} for k, v in item_dict[key].items()]
+        elif key == 'claims':
+            continue
+        else:
+            print(f'{key} not imported')
+
+    return create_item(site, data)
