@@ -1,5 +1,5 @@
 import pywikibot
-import wikidata_utils as wd
+import utils.wikidata_utils as wd
 from datetime import date
 
 

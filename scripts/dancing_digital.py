@@ -3,7 +3,7 @@ from pathlib import Path
 import csv
 
 import pywikibot
-import wikidata_utils as wd
+import utils.wikidata_utils as wd
 
 data_path = Path(__file__).resolve().parent.parent / "data"
 sys.path.append(str(data_path))
