@@ -3,13 +3,11 @@ from pywikibot.data import api
 from datetime import date
 
 
-def create_item(site, labels, descriptions=None):
-    new_item = pywikibot.ItemPage(site)
-    edit_labels(new_item, labels)
-    if descriptions:
-        edit_descriptions(new_item, descriptions)
-
-    return new_item.getID()
+def create_item(site, data):
+    repo = site.data_repository()
+    new_item = pywikibot.ItemPage(repo)
+    edit_entity(new_item, data)
+    return new_item
 
 
 def item_exists(site, label):
@@ -54,6 +52,10 @@ def edit_labels(item, new_labels):
 def edit_descriptions(item, new_descriptions):
     for lang, value in new_descriptions.items():
         item.editDescriptions({lang: value}, summary=f"Setting description: {value}")
+
+
+def edit_entity(item, data):
+    item.editEntity(data, summary=f"Setting label, description, alias, sitelinks")
 
 
 def edit_aliases(item, new_alias):
