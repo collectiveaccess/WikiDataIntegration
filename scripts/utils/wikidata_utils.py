@@ -72,7 +72,7 @@ def remove_sitelink(item, site):
     item.removeSitelink(site)
 
 
-def add_statement(repo, item, property, value):
+def add_claim(repo, item, property, value):
     # return claim if it exists
     if property in item.claims:
         for claim in item.claims[property]:
@@ -86,7 +86,7 @@ def add_statement(repo, item, property, value):
     return new_claim
 
 
-def remove_statement(item, property):
+def remove_claim(item, property):
     if property not in item.claims:
         return
 
