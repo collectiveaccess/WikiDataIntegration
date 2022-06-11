@@ -3,11 +3,280 @@ from pywikibot.data import api
 from datetime import date
 
 
+allowed_lang = [
+    "en",
+    "fr",
+    "ru",
+    "eo",
+    "it",
+    "de",
+    "pl",
+    "es",
+    "be-tarask",
+    "map-bms",
+    "yue",
+    "lzh",
+    "sgs",
+    "rup",
+    "nan",
+    "nds-nl",
+    "vro",
+    "en-gb",
+    "ja",
+    "zh-hant",
+    "fi",
+    "hr",
+    "pt",
+    "zh",
+    "ko",
+    "uz",
+    "af",
+    "am",
+    "an",
+    "ar",
+    "arc",
+    "arz",
+    "ast",
+    "av",
+    "ay",
+    "az",
+    "bar",
+    "be",
+    "bg",
+    "bn",
+    "bo",
+    "br",
+    "bs",
+    "ca",
+    "cs",
+    "cv",
+    "cy",
+    "da",
+    "diq",
+    "el",
+    "et",
+    "eu",
+    "ext",
+    "fa",
+    "fo",
+    "frp",
+    "frr",
+    "fy",
+    "ga",
+    "gan",
+    "gl",
+    "glk",
+    "gn",
+    "gu",
+    "ha",
+    "hak",
+    "he",
+    "hi",
+    "hif",
+    "ht",
+    "hu",
+    "hy",
+    "ia",
+    "id",
+    "ig",
+    "ilo",
+    "io",
+    "is",
+    "iu",
+    "jbo",
+    "jv",
+    "ka",
+    "kg",
+    "kk",
+    "kn",
+    "koi",
+    "ksh",
+    "ku",
+    "kv",
+    "kw",
+    "la",
+    "lbe",
+    "lez",
+    "li",
+    "lij",
+    "ln",
+    "lt",
+    "ltg",
+    "lv",
+    "mdf",
+    "mg",
+    "mhr",
+    "mk",
+    "ml",
+    "mn",
+    "mr",
+    "ms",
+    "mt",
+    "mwl",
+    "my",
+    "nah",
+    "nds",
+    "ne",
+    "nl",
+    "nn",
+    "nov",
+    "oc",
+    "or",
+    "os",
+    "pms",
+    "pnb",
+    "ps",
+    "qu",
+    "ro",
+    "rue",
+    "sa",
+    "sah",
+    "scn",
+    "sco",
+    "se",
+    "sh",
+    "si",
+    "sk",
+    "sl",
+    "so",
+    "sq",
+    "sr",
+    "su",
+    "sv",
+    "sw",
+    "szl",
+    "ta",
+    "te",
+    "tg",
+    "th",
+    "tl",
+    "tr",
+    "tt",
+    "uk",
+    "ur",
+    "vec",
+    "vi",
+    "vls",
+    "wa",
+    "war",
+    "xh",
+    "yi",
+    "yo",
+    "za",
+    "en-ca",
+    "de-ch",
+    "pt-br",
+    "nb",
+    "zh-hans",
+    "zh-cn",
+    "zh-sg",
+    "zh-hk",
+    "zh-tw",
+    "zh-mo",
+    "pa",
+    "ckb",
+    "ceb",
+    "min",
+    "mzn",
+    "vep",
+    "stq",
+    "fur",
+    "ks",
+    "pam",
+    "lb",
+    "gsw",
+    "ace",
+    "bxr",
+    "sr-el",
+    "cdo",
+    "grc",
+    "lzz",
+    "rm",
+    "mai",
+    "ak",
+    "ce",
+    "ky",
+    "xmf",
+    "lo",
+    "azb",
+    "bho",
+    "ug",
+    "sd",
+    "ts",
+    "myv",
+    "vo",
+    "new",
+    "ku-latn",
+    "ba",
+    "jam",
+    "aeb-arab",
+    "as",
+    "ee",
+    "hsb",
+    "tcy",
+    "tg-cyrl",
+    "gd",
+    "ary",
+    "tt-cyrl",
+    "tt-latn",
+    "zu",
+    "dty",
+    "km",
+    "wuu",
+    "pnt",
+    "lfn",
+    "olo",
+    "lg",
+    "bcl",
+    "inh",
+    "rmy",
+    "tw",
+    "atj",
+    "sat",
+    "pi",
+    "mi",
+    "zh-my",
+    "kab",
+    "lmo",
+    "nqo",
+    "gcr",
+    "smn",
+    "sms",
+    "tum",
+    "mni",
+    "pfl",
+    "awa",
+    "kk-cyrl",
+    "lld",
+    "dag",
+    "bm",
+    "ban",
+    "bjn",
+    "pap",
+    "co",
+    "shi",
+    "ti",
+    "tay",
+    "ms-arab",
+    "crh",
+    "pwn",
+    "udm",
+    "sn",
+    "szy",
+    "als",
+    "tg-latn",
+    "pih",
+]
+
+
 def create_item(site, data):
     repo = site.data_repository()
     new_item = pywikibot.ItemPage(repo)
-    edit_entity(new_item, data)
-    return new_item
+    try:
+        edit_entity(new_item, data)
+        return new_item
+    except:
+        print('could not create data', data['labels']['en'])
 
 
 def item_exists(site, label):
@@ -55,7 +324,7 @@ def edit_descriptions(item, new_descriptions):
 
 
 def edit_entity(item, data):
-    item.editEntity(data, summary=f"Setting label, description, alias, sitelinks")
+    item.editEntity(data, summary="Setting label, description, alias, sitelinks")
 
 
 def edit_aliases(item, new_alias):
@@ -163,16 +432,86 @@ def remove_reference(item, statement_property, reference_property):
 
 def import_item(site, item_dict, import_sitelinks):
     data = {}
-    for key in item_dict.keys():
-        if key in ['labels', 'descriptions', 'aliases']:
-            if len(item_dict[key]) > 0:
-                data[key] = {k: v for k, v in item_dict[key].items()}
-        elif key == 'sitelinks':
+    for key, values in item_dict.items():
+        if key in ["labels", "descriptions", "aliases"]:
+            if len(values) > 0:
+                data[key] = {k: v for k, v in values.items() if k in allowed_lang[0:20]}
+        elif key == "sitelinks":
             if import_sitelinks and len(item_dict[key]) > 0:
                 data[key] = [{k: v.title} for k, v in item_dict[key].items()]
-        elif key == 'claims':
+        elif key == "claims":
             continue
         else:
-            print(f'{key} not imported')
-
+            print(f"{key} not imported")
     return create_item(site, data)
+
+
+def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
+    claim_value = claim.getTarget()
+    if not claim_value:
+        return
+
+    if claim.type == "time":
+        return claim_value
+    elif claim.type == "external-id":
+        return claim_value
+    elif claim.type == "string":
+        return claim_value
+    elif claim.type == "url":
+        return claim_value
+    elif claim.type == "commonsMedia":
+        return
+    elif claim.type == "monolingualtext":
+        return claim_value
+    elif claim.type == "globe-coordinate":
+        return pywikibot.Coordinate(
+            lat=claim_value.lat, lon=claim_value.lon, precision=0.0001
+        )
+    elif claim.type == "quantity":
+        if not claim_value.get_unit_item():
+            return
+
+        unit_dict = claim_value.get_unit_item().get()
+        # check if unit exists locally
+        results = item_exists(site, unit_dict["labels"]["en"])
+        existing = False
+        for result in results:
+            if (
+                result["description"] == unit_dict["descriptions"]["en"]
+                and result["label"] == unit_dict["labels"]["en"]
+            ):
+                existing = True
+                new_unit_value = pywikibot.ItemPage(repo, result["id"])
+        # if unit doesn't exists locally, import it
+        if not existing:
+            new_unit_value = import_item(site, unit_dict, import_sitelinks)
+        unit = new_unit_value.full_url().replace("wiki/Item%3A", "entity/")
+        return pywikibot.WbQuantity(amount=claim_value.amount, unit=unit, site=site)
+
+    elif claim.type == "wikibase-item":
+        claim_item_dict = claim_value.get()
+        if "en" not in claim_item_dict["labels"]:
+            return
+
+        # check if claim item exists locally
+        results = item_exists(site, claim_item_dict["labels"]["en"])
+        existing = False
+        for result in results:
+            if result["description"]:
+                if (
+                    result["description"] == claim_item_dict["descriptions"]["en"]
+                    and result["label"] == claim_item_dict["labels"]["en"]
+                ):
+                    existing = True
+                    new_claim_value = pywikibot.ItemPage(repo, result["id"])
+            elif result["label"] == claim_item_dict["labels"]["en"]:
+                existing = True
+                new_claim_value = pywikibot.ItemPage(repo, result["id"])
+
+        # if claim item doesn't exists locally, import it
+        if not existing:
+            new_claim_value = import_item(site, claim_item_dict, import_sitelinks)
+        return new_claim_value
+    else:
+
+        raise ValueError("unsupported claim type", claim.type)
