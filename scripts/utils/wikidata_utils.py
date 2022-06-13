@@ -276,7 +276,7 @@ def create_item(site, data):
         edit_entity(new_item, data)
         return new_item
     except:
-        print('could not create data', data['labels']['en'])
+        print("could not create data", data["labels"]["en"])
 
 
 def item_exists(site, label):
@@ -515,3 +515,23 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
     else:
 
         raise ValueError("unsupported claim type", claim.type)
+
+
+def get_claim_value(claim, include_qid=True):
+    if claim.type == "wikibase-item":
+        if include_qid:
+            value = claim.target.title() + " " + claim.getTarget().labels["en"]
+        else:
+            value = claim.getTarget().labels["en"]
+    elif claim.type == "time":
+        value = claim.target.toTimestr()
+    elif claim.type == "globe-coordinate":
+        import pdb
+
+        pdb.set_trace()
+    elif claim.type == "quantity":
+        value = claim.target.amount.to_eng_string()
+    else:
+        value = claim.getTarget()
+
+    return value
