@@ -1,6 +1,7 @@
 import pywikibot
 import utils.wikidata_utils as wd
 
+"""Edit item Q225211 in test.wikidata.org """
 
 site = pywikibot.Site("test", "wikidata")
 repo = site.data_repository()
@@ -18,4 +19,4 @@ new_alias = {"en": ["foobar 1", "foobar 2", "foobar 3"]}
 wd.edit_aliases(item, new_alias)
 
 wd.edit_sitelink(item, "enwiki", "Jane Austen")
-# remove_sitelink(item, 'enwiki')
+wd.remove_sitelink(item, "enwiki")

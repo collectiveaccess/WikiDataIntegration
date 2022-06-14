@@ -2,6 +2,7 @@ import pywikibot
 import utils.wikidata_utils as wd
 from datetime import date
 
+"""Edit claims for item Q225211 in test.wikidata.org """
 
 site = pywikibot.Site("test", "wikidata")
 repo = site.data_repository()
@@ -23,7 +24,7 @@ wd.add_claim(repo, item, "P95197", value)
 value = pywikibot.ItemPage(repo, "Q4546")
 wd.add_claim(repo, item, "P131", value)
 
-# add and remove statement
+# add and remove claim
 wd.add_claim(repo, item, "P207", "xyz")
 wd.remove_claim(item, "P207")
 

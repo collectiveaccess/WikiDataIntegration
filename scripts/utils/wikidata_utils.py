@@ -270,6 +270,7 @@ allowed_lang = [
 
 
 def create_item(site, data):
+    """create wikidata item (Q id record)."""
     repo = site.data_repository()
     new_item = pywikibot.ItemPage(repo)
     try:
@@ -279,14 +280,15 @@ def create_item(site, data):
         print("could not create data", data["labels"]["en"])
 
 
-def item_exists(site, label):
+def item_exists(site, keyword, language="en"):
+    """search wikidata for a given keyword"""
     # https://stackoverflow.com/a/45050455
     params = {
         "action": "wbsearchentities",
         "format": "json",
-        "language": "en",
+        "language": language,
         "type": "item",
-        "search": label,
+        "search": keyword,
     }
     api_request = api.Request(site=site, parameters=params)
     result = api_request.submit()
@@ -295,6 +297,7 @@ def item_exists(site, label):
 
 
 def process_item_exists_results(results):
+    """format search results from wikidata"""
     count = len(results)
     if count == 0:
         return []
@@ -314,34 +317,41 @@ def process_item_exists_results(results):
 
 
 def edit_labels(item, new_labels):
+    """Edit labels for a given item"""
     for lang, value in new_labels.items():
         item.editLabels(labels={lang: value}, summary=f"Setting label: {value}")
 
 
 def edit_descriptions(item, new_descriptions):
+    """edit descriptions for a given item"""
     for lang, value in new_descriptions.items():
         item.editDescriptions({lang: value}, summary=f"Setting description: {value}")
 
 
 def edit_entity(item, data):
+    """edit label, description, alias and sitelinks for a given item"""
     item.editEntity(data, summary="Setting label, description, alias, sitelinks")
 
 
 def edit_aliases(item, new_alias):
+    """edit aliases for a given item"""
     for lang, value in new_alias.items():
         item.editAliases({lang: value}, summary=f"Set aliases: {value}")
 
 
 def edit_sitelink(item, site, title):
+    """edit sitelinks for a given tiem"""
     sitedict = {"site": site, "title": title}
     item.setSitelink(sitedict, summary=f"Set sitelink: {title}")
 
 
 def remove_sitelink(item, site):
+    """remove sitelinks from a given item"""
     item.removeSitelink(site)
 
 
 def add_claim(repo, item, property, value):
+    """add claim to an item"""
     # return claim if it exists
     if property in item.claims:
         for claim in item.claims[property]:
@@ -356,6 +366,7 @@ def add_claim(repo, item, property, value):
 
 
 def remove_claim(item, property):
+    """remove claim from an item"""
     if property not in item.claims:
         return
 
@@ -364,6 +375,7 @@ def remove_claim(item, property):
 
 
 def add_qualifier(repo, claim, property, value):
+    """add qualifier to a claim"""
     # return qualifier if it exists
     if property in claim.qualifiers:
         for qualifier in claim.qualifiers[property]:
@@ -378,6 +390,7 @@ def add_qualifier(repo, claim, property, value):
 
 
 def remove_qualifier(item, statement_property, qualifier_property):
+    """"remove qualifier from a claim"""
     if statement_property not in item.claims:
         return
 
@@ -393,6 +406,7 @@ def remove_qualifier(item, statement_property, qualifier_property):
 
 
 def add_reference(repo, claim, property, value):
+    """add reference to a claim"""
     for source in claim.getSources():
         if property in source:
             for old_claim in source[property]:
@@ -405,6 +419,7 @@ def add_reference(repo, claim, property, value):
 
 
 def add_reference_date(repo, claim, property, source_date=date.today()):
+    """add date as reference for a claim"""
     value = pywikibot.WbTime(
         year=int(source_date.strftime("%Y")),
         month=int(source_date.strftime("%m")),
@@ -414,6 +429,8 @@ def add_reference_date(repo, claim, property, source_date=date.today()):
 
 
 def remove_reference(item, statement_property, reference_property):
+    """add remove reference from claims"""
+
     if statement_property not in item.claims:
         return
 
@@ -422,15 +439,15 @@ def remove_reference(item, statement_property, reference_property):
         for old_source in claim.getSources():
             for old_claims in old_source.values():
                 for old_claim in old_claims:
-                    # import pdb; pdb.set_trace()
                     if old_claim.getID() == reference_property:
                         sources.append(old_claim)
 
-    if len(sources) > 0:
-        claim.removeSources(sources, summary="Removed source(s).")
+        if len(sources) > 0:
+            claim.removeSources(sources, summary="Removed source(s).")
 
 
 def import_item(site, item_dict, import_sitelinks):
+    """import an item record from wikidata."""
     data = {}
     for key, values in item_dict.items():
         if key in ["labels", "descriptions", "aliases"]:
@@ -447,6 +464,11 @@ def import_item(site, item_dict, import_sitelinks):
 
 
 def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
+    """When importing claims from wikidata.org, they often refer to items records
+    (Q id) that exists in wikidata.org. This method searches if the item record
+    exists in the local wikidata. If record exists, return the record
+    from local wikidata. If record does not exists, create record in local
+    wikidata, and return new record."""
     claim_value = claim.getTarget()
     if not claim_value:
         return
@@ -458,6 +480,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
     elif claim.type == "string":
         return claim_value
     elif claim.type == "url":
+        # BUG: url does not work
         return claim_value
     elif claim.type == "commonsMedia":
         return
@@ -518,6 +541,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
 
 
 def get_claim_value(claim, include_qid=True):
+    """get the text value of a claim"""
     if claim.type == "wikibase-item":
         if include_qid:
             value = claim.target.title() + " " + claim.getTarget().labels["en"]
@@ -526,9 +550,7 @@ def get_claim_value(claim, include_qid=True):
     elif claim.type == "time":
         value = claim.target.toTimestr()
     elif claim.type == "globe-coordinate":
-        import pdb
-
-        pdb.set_trace()
+        value = claim.getTarget().lat + " " + claim.getTarget().lon
     elif claim.type == "quantity":
         value = claim.target.amount.to_eng_string()
     else:

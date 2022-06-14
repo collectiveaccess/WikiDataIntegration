@@ -1,11 +1,12 @@
 import pywikibot
 
+"""display item Q225211 in test.wikidata.org"""
+
 site = pywikibot.Site("test", "wikidata")
 repo = site.data_repository()
 item = pywikibot.ItemPage(repo, "Q225211")
 
 item_dict = item.get()
-
 
 for key in item_dict.keys():
     print("----")

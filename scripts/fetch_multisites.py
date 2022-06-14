@@ -1,5 +1,7 @@
 import pywikibot
 
+"""fetch item from wikidata.org, test.wikidata.org, whirl.mine.nu:8888"""
+
 
 def display_item(site, qid):
     repo = site.data_repository()
