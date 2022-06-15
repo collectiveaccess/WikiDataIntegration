@@ -1,7 +1,7 @@
-name,person
-No Boundaries,Gesel Mason
-antithesis,Gesel Mason
-"Women, Sex, and Desire Sometimes You Feel Like a Ho, Sometimes You Don't",Gesel Mason
-Nixon in China,Mark Morris
-Sandpaper Ballet,Mark Morris
-Esteemed Guests,Mark Morris
+name,person,id,description
+No Boundaries,Gesel Mason,,work by Gesel Mason
+antithesis,Gesel Mason,,work by Gesel Mason
+"Women, Sex, and Desire Sometimes You Feel Like a Ho, Sometimes You Don't",Gesel Mason,,work by Gesel Mason
+Nixon in China,Mark Morris,,work by Mark Morris
+Sandpaper Ballet,Mark Morris,Q64,work by Mark Morris
+Esteemed Guests,Mark Morris,,work by Mark Morris
