@@ -9,18 +9,18 @@ repo = site.data_repository()
 item = pywikibot.ItemPage(repo, "Q225211")
 item.get()
 
-# string value
+# add claim with string value
 wd.add_claim(repo, item, "P345", "abc")
 
-# coordinates value
+# add claim with coordinates value
 value = pywikibot.Coordinate(site=repo, lat=52.90, lon=0.1225, precision=0.001)
 wd.add_claim(repo, item, "P35", value)
 
-# date value
+# add claim with date value
 value = pywikibot.WbTime(site=repo, year=1999, month=6, day=8)
 wd.add_claim(repo, item, "P95197", value)
 
-# item value
+# add claim with item value
 value = pywikibot.ItemPage(repo, "Q4546")
 wd.add_claim(repo, item, "P131", value)
 
@@ -28,16 +28,16 @@ wd.add_claim(repo, item, "P131", value)
 wd.add_claim(repo, item, "P207", "xyz")
 wd.remove_claim(item, "P207")
 
-# item value
+# add claim with item value
 value = pywikibot.ItemPage(repo, "Q350")
 statement = wd.add_claim(repo, item, "P131", value)
-# add qualifier
+# add qualifier to claim
 value = pywikibot.ItemPage(repo, "Q35408")
 wd.add_qualifier(repo, statement, "P100", value)
 # add and remove qualifier
 wd.add_qualifier(repo, statement, "P207", "def")
 wd.remove_qualifier(item, "P131", "P207")
-# add references
+# add references to claim
 value = pywikibot.ItemPage(repo, "Q202473")
 wd.add_reference(repo, statement, "P149", value)
 wd.add_reference_date(repo, statement, "P146")

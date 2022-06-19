@@ -390,7 +390,7 @@ def add_qualifier(repo, claim, property, value):
 
 
 def remove_qualifier(item, statement_property, qualifier_property):
-    """"remove qualifier from a claim"""
+    """remove qualifier from a claim"""
     if statement_property not in item.claims:
         return
 
