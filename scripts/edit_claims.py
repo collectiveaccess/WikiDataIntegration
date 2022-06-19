@@ -13,11 +13,11 @@ item.get()
 wd.add_claim(repo, item, "P345", "abc")
 
 # coordinates value
-value = pywikibot.Coordinate(lat=52.208, lon=0.1225, precision=0.001)
+value = pywikibot.Coordinate(site=repo, lat=52.90, lon=0.1225, precision=0.001)
 wd.add_claim(repo, item, "P35", value)
 
 # date value
-value = pywikibot.WbTime(year=1977, month=6, day=8)
+value = pywikibot.WbTime(site=repo, year=1999, month=6, day=8)
 wd.add_claim(repo, item, "P95197", value)
 
 # item value

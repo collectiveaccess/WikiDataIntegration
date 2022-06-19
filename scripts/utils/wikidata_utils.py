@@ -421,6 +421,7 @@ def add_reference(repo, claim, property, value):
 def add_reference_date(repo, claim, property, source_date=date.today()):
     """add date as reference for a claim"""
     value = pywikibot.WbTime(
+        site=repo,
         year=int(source_date.strftime("%Y")),
         month=int(source_date.strftime("%m")),
         day=int(source_date.strftime("%d")),
