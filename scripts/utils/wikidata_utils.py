@@ -1,19 +1,38 @@
 import pywikibot
 from pywikibot.data import api
 from datetime import date
+from utils.logger import logger
 
 
+def validate_create_data(data, key):
+    if key not in data:
+        raise ValueError(f"create_item: {key} is required")
+
+    if key not in ["labels", "descriptions", "sitelinks", "aliases"]:
+        raise ValueError(f"create_item: {key} is not a valid key")
+
+    if key in data:
+        if not isinstance(data[key], dict):
+            raise ValueError(f"create_item: {key} must be a dictionary")
+
+        if len(data[key].keys()) == 0:
+            raise ValueError(f"create_item: {key} must be a dictionary")
 
 
-def create_item(site, data):
+def create_item(site, data, validation=True):
     """create wikidata item (Q id record)."""
+    if validation:
+        validate_create_data(data, "labels")
+        validate_create_data(data, "descriptions")
+
     repo = site.data_repository()
     new_item = pywikibot.ItemPage(repo)
-    try:
-        edit_entity(new_item, data)
+    edit_entity(new_item, data)
+
+    # id -1 means that item record was not created
+    if new_item.id != "-1":
+        logger.info(f"Item created: {new_item.id}")
         return new_item
-    except:
-        print("could not create data", data["labels"]["en"])
 
 
 def item_exists(site, keyword, language="en"):
@@ -74,7 +93,16 @@ def edit_descriptions(item, new_descriptions):
 
 def edit_entity(item, data):
     """edit label, description, alias and sitelinks for a given item"""
-    item.editEntity(data, summary="Setting label, description, alias, sitelinks")
+    try:
+        item.editEntity(data, summary="Setting label, description, alias, sitelinks")
+        return item
+    except:
+        if "en" in data["labels"]:
+            lang = "en"
+        else:
+            for k, v in data["labels"].items():
+                lang = k
+        logger.error(f"Could not edit item: {data['labels'][lang]} {item.id}")
 
 
 def edit_aliases(item, new_alias):
