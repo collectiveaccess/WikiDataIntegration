@@ -19,7 +19,7 @@ def display_item(site, qid):
 site = pywikibot.Site("wikidata", "wikidata")
 display_item(site, "Q1")
 
-site = pywikibot.Site("en", "cawikidev")
+site = pywikibot.Site("en", "cawiki")
 display_item(site, "Q1")
 
 site = pywikibot.Site("test", "wikidata")

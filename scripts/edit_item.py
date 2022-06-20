@@ -20,3 +20,6 @@ wd.edit_aliases(item, new_alias)
 
 wd.edit_sitelink(item, "enwiki", "Jane Austen")
 wd.remove_sitelink(item, "enwiki")
+
+data = {"labels": {"fr": "fr foo"}}
+wd.edit_entity(item, data)

@@ -8,12 +8,14 @@ site = pywikibot.Site("test", "wikidata")
 keywords = ["foo", "foo2", "foo 06-07 1"]
 
 for keyword in keywords:
-    print(keyword)
     res = wd.item_exists(site, keyword)
     if len(res) == 0:
-        print(f"will create item: {keyword}")
+        print(f"{keyword}: zero items found")
     elif len(res) == 1:
-        print("one item found", res[0]["id"])
+        print(f"{keyword}: one item found")
+        print(res[0])
     else:
-        print("multiple items found", res)
+        print(f"{keyword}: multiple items found")
+        for r in res:
+            print(r)
     print()
