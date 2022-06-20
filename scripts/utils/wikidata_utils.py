@@ -41,12 +41,20 @@ def process_item_exists_results(results):
         tmp = []
         for result in results:
             description = result["description"] if "description" in result else None
+            label = result["label"] if "label" in result else None
+            lang = (
+                result["display"]["label"]["language"] if "display" in result else None
+            )
+            aliases = result["aliases"] if "aliases" in result else None
+
             tmp.append(
                 {
                     "id": result["id"],
-                    "label": result["label"],
+                    "label": label,
                     "description": description,
                     "url": result["url"],
+                    "language": lang,
+                    "aliases": aliases,
                 }
             )
         return tmp
