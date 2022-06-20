@@ -31,23 +31,27 @@ def preview_wikidata_records(filename):
 
 def save_wikidata_to_csv(filename):
     """
-    Read csv of people, venue, works. Connect to wikidata.org to find records
-    that have same names. Create csv with found records.
+    Read csv of names. Connect to wikidata.org to find records
+    that have same names. Create csv with all the found records.
     """
     site = pywikibot.Site("wikidata", "wikidata")
     rows = []
     df = pd.read_csv(data_path / filename)
     for index, row in df.iterrows():
-        label = row["name"]
-        res = wd.item_exists(site, label)
+        # if row["name"] != "Pina Bausch":
+        #     continue
 
-        if len(res) > 0:
-            for r in res:
+        label = row["name"]
+        results = wd.item_exists(site, label)
+
+        if len(results) > 0:
+            for result in results:
                 rows.append(
                     {
-                        "wikidata.org id": r["id"],
-                        "label": r["label"],
-                        "description": r["description"],
+                        "wikidata.org id": result["id"],
+                        "label": result["label"],
+                        "description": result["description"],
+                        "language": result["language"],
                     }
                 )
 
