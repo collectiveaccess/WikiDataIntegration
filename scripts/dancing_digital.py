@@ -5,6 +5,7 @@ import pywikibot
 import fire
 
 import utils.wikidata_utils as wd
+from constants.languages import allowed_languages
 
 data_path = Path(__file__).resolve().parent.parent / "data"
 sys.path.append(str(data_path))
@@ -238,6 +239,16 @@ def add_wikidata_claims_all(import_sitelinks=False):
 def add_existing_sources_qualifiers_all(import_sitelinks=False):
     for file in files:
         add_existing_sources_qualifiers(file, import_sitelinks)
+def test_invalid_lanuages():
+    local_site = pywikibot.Site("en", "cawiki")
+    repo = local_site.data_repository()
+    item = pywikibot.ItemPage(repo, "Q592")
+
+    for lan in allowed_languages:
+        try:
+            item.editEntity({"labels": {lan: f"foo {lan}"}})
+        except:
+            print(lan, "invalid")
 
 
 if __name__ == "__main__":
@@ -248,5 +259,6 @@ if __name__ == "__main__":
             "create_wikidata_records_all": create_wikidata_records_all,
             "add_wikidata_claims_all": add_wikidata_claims_all,
             "add_existing_sources_qualifiers_all": add_existing_sources_qualifiers_all,
+            "test_invalid_lanuages": test_invalid_lanuages
         }
     )

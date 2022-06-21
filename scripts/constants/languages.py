@@ -1,4 +1,4 @@
-allowed_lang = [
+allowed_languages = [
     "en",
     "fr",
     "ru",
@@ -252,9 +252,7 @@ allowed_lang = [
     "shi",
     "ti",
     "tay",
-    "ms-arab",
     "crh",
-    "pwn",
     "udm",
     "sn",
     "szy",
@@ -262,3 +260,5 @@ allowed_lang = [
     "tg-latn",
     "pih",
 ]
+
+invalid_languages = ["ms-arab", "pwn"]
