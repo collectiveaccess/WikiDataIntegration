@@ -315,6 +315,60 @@ def add_dd_sources_all():
         add_dd_sources(file)
 
 
+def create_basic_dd_records():
+    site = pywikibot.Site("en", "cawiki")
+
+    data = {
+        "labels": {
+            "en": "Dancing Digital",
+        },
+        "descriptions": {
+            "en": "dance catalog project",
+        },
+    }
+    wd.create_item(site, data)
+
+    data = {
+        "labels": {
+            "en": "music pedagogue",
+            "fr": "professeur de musique",
+            "de": "Musikpädagoge",
+            "ru": "музыкальный педагог",
+            "es": "profesor de música",
+            "it": "insegnante di musica",
+            "ja": "音楽教育者",
+            "pl": "nauczyciel muzyki",
+            "en-gb": "music educator",
+            "eo": "muzikinstruisto",
+            "be-tarask": "музычны пэдагог",
+            "zh-hant": "音樂教育家",
+        },
+        "descriptions": {
+            "fr": "pédagogue dans le domaine de la musique",
+            "en": "profession and academic title",
+            "de": "Beruf",
+            "en-gb": "profession",
+        },
+        "aliases": {
+            "de": ["Musikpädagogin"],
+            "en": ["music teacher", "music educator"],
+            "es": [
+                "profesora de música",
+                "maestro de música",
+                "maestra de música",
+                "educador de música",
+                "profesor de musica",
+                "profesora de musica",
+                "maestro de musica",
+                "maestra de musica",
+                "educador de musica",
+            ],
+            "eo": ["muzikinstruistino"],
+        },
+    }
+    wd.create_item(site, data)
+
+
 def test_invalid_lanuages():
     local_site = pywikibot.Site("en", "cawiki")
     repo = local_site.data_repository()
@@ -334,6 +388,7 @@ if __name__ == "__main__":
             "save_wikidata_to_csv_all": save_wikidata_to_csv_all,
             "create_wikidata_records_all": create_wikidata_records_all,
             "add_wikidata_claims_all": add_wikidata_claims_all,
+            "create_basic_dd_records": create_basic_dd_records,
             "create_dd_new_items_all": create_dd_new_items_all,
             "add_dd_claims_all": add_dd_claims_all,
             "add_dd_sources_all": add_dd_sources_all,
