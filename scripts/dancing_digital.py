@@ -5,7 +5,6 @@ import pywikibot
 import fire
 
 import utils.wikidata_utils as wd
-from constants.languages import allowed_languages
 from constants.wd_properties import properties
 
 data_path = Path(__file__).resolve().parent.parent / "data"
@@ -369,13 +368,16 @@ def create_basic_dd_records():
     wd.create_item(site, data)
 
 
-def test_invalid_lanuages():
+def test_invalid_languages():
+    """find which languages are not allowed in wikibase instance"""
     local_site = pywikibot.Site("en", "cawiki")
     repo = local_site.data_repository()
     item = pywikibot.ItemPage(repo, "Q592")
 
-    for lan in allowed_languages:
+    tmp = ["pcm"]
+    for lan in tmp:
         try:
+            print(lan)
             item.editEntity({"labels": {lan: f"foo {lan}"}})
         except:
             print(lan, "invalid")
@@ -392,6 +394,6 @@ if __name__ == "__main__":
             "create_dd_new_items_all": create_dd_new_items_all,
             "add_dd_claims_all": add_dd_claims_all,
             "add_dd_sources_all": add_dd_sources_all,
-            "test_invalid_lanuages": test_invalid_lanuages
+            "test_invalid_languages": test_invalid_languages,
         }
     )
