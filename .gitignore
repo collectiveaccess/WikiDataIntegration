@@ -73,3 +73,4 @@ throttle.ctrl
 apicache-py3
 pywikibot.lwp
 families/*_family.py
+logs
