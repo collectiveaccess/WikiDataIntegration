@@ -220,8 +220,9 @@ def remove_reference(item, statement_property, reference_property):
             claim.removeSources(sources, summary="Removed source(s).")
 
 
-def import_item(site, item_dict, import_sitelinks):
+def import_item(site, item_dict, import_sitelinks=True):
     """import an item record from wikidata."""
+    remove_identical_label_description(item_dict)
     data = {}
     for key, values in item_dict.items():
         if key in ["labels", "descriptions", "aliases"]:
@@ -313,8 +314,30 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
             new_claim_value = import_item(site, claim_item_dict, import_sitelinks)
         return new_claim_value
     else:
-
         raise ValueError("unsupported claim type", claim.type)
+
+
+def remove_identical_label_description(claim_item_dict):
+    """remove description if it has same value as label"""
+    if "labels" not in claim_item_dict:
+        return
+    if "descriptions" not in claim_item_dict:
+        return
+
+    new_descriptions = {}
+    for lang, v in claim_item_dict["labels"].items():
+        if lang not in claim_item_dict["descriptions"]:
+            continue
+
+        if claim_item_dict["labels"][lang] != claim_item_dict["descriptions"][lang]:
+            new_descriptions[lang] = claim_item_dict["descriptions"][lang]
+        else:
+            logger.warning(
+                f"'{claim_item_dict['descriptions'][lang]}': "
+                f"{lang} description removed because it is the same as label"
+            )
+
+    claim_item_dict["descriptions"] = new_descriptions
 
 
 def get_claim_value(claim, include_qid=True):
