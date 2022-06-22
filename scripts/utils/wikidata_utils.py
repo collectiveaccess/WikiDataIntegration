@@ -260,23 +260,11 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
     if not claim_value:
         return
 
-    if claim.type == "time":
-        return claim_value
-    elif claim.type == "external-id":
-        return claim_value
-    elif claim.type == "string":
-        return claim_value
-    elif claim.type == "url":
-        # BUG: url does not work
-        return claim_value
-    elif claim.type == "commonsMedia":
-        return
-    elif claim.type == "monolingualtext":
-        return claim_value
-    elif claim.type == "globe-coordinate":
+    if claim.type == "globe-coordinate":
         return pywikibot.Coordinate(
-            lat=claim_value.lat, lon=claim_value.lon, precision=0.0001
+            site=repo, lat=claim_value.lat, lon=claim_value.lon, precision=0.0001
         )
+
     elif claim.type == "quantity":
         if not claim_value.get_unit_item():
             return
@@ -322,8 +310,11 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
         if not existing:
             new_claim_value = import_item(site, claim_item_dict, import_sitelinks)
         return new_claim_value
+
+    elif claim.type == "commonsMedia":
+        return
     else:
-        raise ValueError("unsupported claim type", claim.type)
+        return claim_value
 
 
 def remove_identical_label_description(claim_item_dict):
