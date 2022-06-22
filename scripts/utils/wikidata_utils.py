@@ -2,6 +2,7 @@ import pywikibot
 from pywikibot.data import api
 from datetime import date
 from utils.logger import logger
+from constants.languages import invalid_languages, allowed_languages
 
 
 def validate_create_data(data, key):
@@ -225,7 +226,9 @@ def import_item(site, item_dict, import_sitelinks):
     for key, values in item_dict.items():
         if key in ["labels", "descriptions", "aliases"]:
             if len(values) > 0:
-                data[key] = {k: v for k, v in values.items() if k in allowed_lang[0:20]}
+                data[key] = {
+                    k: v for k, v in values.items() if k not in invalid_languages
+                }
         elif key == "sitelinks":
             if import_sitelinks and len(item_dict[key]) > 0:
                 data[key] = [{k: v.title} for k, v in item_dict[key].items()]
@@ -233,7 +236,8 @@ def import_item(site, item_dict, import_sitelinks):
             continue
         else:
             print(f"{key} not imported")
-    return create_item(site, data)
+
+    return create_item(site, data, validation=False)
 
 
 def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
