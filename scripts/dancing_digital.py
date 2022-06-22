@@ -216,6 +216,24 @@ def add_existing_sources_qualifiers(filename, import_sitelinks):
                             print('sources not saved', property)
 
 
+def create_dd_new_items(filename):
+    """create records for dancing digital names that are not in wikidata.org"""
+    site = pywikibot.Site("en", "cawiki")
+
+    df = pd.read_csv(data_path / filename)
+    for index, row in df.iterrows():
+        if pd.isna(row["id"]):
+            data = {
+                "descriptions": {"en": row["description"]},
+                "labels": {"en": row["name"]},
+            }
+            new_item = wd.create_item(site, data)
+            if new_item:
+                df.at[index, "id"] = new_item.getID()
+
+                df.to_csv(data_path / filename, index=False)
+
+
 def preview_wikidata_all():
     for file in files:
         preview_wikidata_records(file)
@@ -236,9 +254,11 @@ def add_wikidata_claims_all(import_sitelinks=False):
         add_wikidata_claims(file, import_sitelinks)
 
 
-def add_existing_sources_qualifiers_all(import_sitelinks=False):
+def create_dd_new_items_all():
     for file in files:
-        add_existing_sources_qualifiers(file, import_sitelinks)
+        create_dd_new_items(file)
+
+
 def test_invalid_lanuages():
     local_site = pywikibot.Site("en", "cawiki")
     repo = local_site.data_repository()
@@ -258,7 +278,7 @@ if __name__ == "__main__":
             "save_wikidata_to_csv_all": save_wikidata_to_csv_all,
             "create_wikidata_records_all": create_wikidata_records_all,
             "add_wikidata_claims_all": add_wikidata_claims_all,
-            "add_existing_sources_qualifiers_all": add_existing_sources_qualifiers_all,
+            "create_dd_new_items_all": create_dd_new_items_all,
             "test_invalid_lanuages": test_invalid_lanuages
         }
     )
