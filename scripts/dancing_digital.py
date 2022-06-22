@@ -109,25 +109,31 @@ def create_wikidata_records(filename, import_sitelinks):
             df.to_csv(data_path / "wikidata_org" / filename, index=False)
 
 
-def add_existing_claims(filename, import_sitelinks):
-    local_site = pywikibot.Site("en", "cawikidev")
+def add_wikidata_claims(filename, import_sitelinks):
+    """Add claims to wikidata items."""
+    local_site = pywikibot.Site("en", "cawiki")
     local_repo = local_site.data_repository()
     site = pywikibot.Site("wikidata", "wikidata")
     repo = site.data_repository()
 
     df = pd.read_csv(data_path / "wikidata_org" / filename)
     for index, row in df.iterrows():
+        print(index, row["label"])
+
         item = pywikibot.ItemPage(repo, row["wikidata.org id"])
         item_dict = item.get()
         local_item = pywikibot.ItemPage(local_repo, row["id"])
-        print(index, row["label"])
 
         # iterate over all the wikidata.org claims
         for property, values in item_dict["claims"].items():
             for claim in values:
-                new_claim_value = wd.convert_to_local_claim_value(
-                    local_site, local_repo, claim, import_sitelinks
-                )
+                try:
+                    new_claim_value = wd.convert_to_local_claim_value(
+                        local_site, local_repo, claim, import_sitelinks
+                    )
+                except:
+                    print(f"error new_claim_value: {row['label']}, {property}")
+
                 if new_claim_value:
                     try:
                         wd.add_claim(repo, local_item, property, new_claim_value)
@@ -224,9 +230,9 @@ def create_wikidata_records_all(import_sitelinks=False):
         create_wikidata_records(file, import_sitelinks)
 
 
-def add_existing_claims_all(import_sitelinks=False):
+def add_wikidata_claims_all(import_sitelinks=False):
     for file in files:
-        add_existing_claims(file, import_sitelinks)
+        add_wikidata_claims(file, import_sitelinks)
 
 
 def add_existing_sources_qualifiers_all(import_sitelinks=False):
@@ -240,7 +246,7 @@ if __name__ == "__main__":
             "preview_wikidata_all": preview_wikidata_all,
             "save_wikidata_to_csv_all": save_wikidata_to_csv_all,
             "create_wikidata_records_all": create_wikidata_records_all,
-            "add_existing_claims_all": add_existing_claims_all,
+            "add_wikidata_claims_all": add_wikidata_claims_all,
             "add_existing_sources_qualifiers_all": add_existing_sources_qualifiers_all,
         }
     )
