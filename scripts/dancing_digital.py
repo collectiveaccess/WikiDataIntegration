@@ -6,6 +6,7 @@ import fire
 
 import utils.wikidata_utils as wd
 from constants.languages import allowed_languages
+from constants.wd_properties import properties
 
 data_path = Path(__file__).resolve().parent.parent / "data"
 sys.path.append(str(data_path))
@@ -234,6 +235,51 @@ def create_dd_new_items(filename):
                 df.to_csv(data_path / filename, index=False)
 
 
+def add_dd_claims(filename):
+    """add dancing digital claims to item records"""
+    local_site = pywikibot.Site("en", "cawiki")
+    local_repo = local_site.data_repository()
+    site = pywikibot.Site("wikidata", "wikidata")
+    repo = site.data_repository()
+
+    res = wd.item_exists(local_site, "Dancing Digital")
+    if len(res) == 1:
+        dd_item = pywikibot.ItemPage(local_repo, res[0]["id"])
+    else:
+        raise ValueError("Dancing Digital record not found.")
+
+    df = pd.read_csv(data_path / filename)
+    for index, row in df.iterrows():
+        print(row["id"], row["name"])
+        item = pywikibot.ItemPage(local_repo, row["id"])
+        wd.add_claim(repo, item, properties["part of"], dd_item)
+
+
+def add_dd_sources(filename):
+    """add dancing digital claims to item records"""
+    local_site = pywikibot.Site("en", "cawiki")
+    local_repo = local_site.data_repository()
+    site = pywikibot.Site("wikidata", "wikidata")
+    repo = site.data_repository()
+
+    res = wd.item_exists(local_site, "Dancing Digital")
+    if len(res) == 1:
+        dd_item = pywikibot.ItemPage(local_repo, res[0]["id"])
+    else:
+        raise ValueError("Dancing Digital record not found.")
+
+    df = pd.read_csv(data_path / filename)
+    for index, row in df.iterrows():
+        print(row["id"], row["name"])
+        item = pywikibot.ItemPage(local_repo, row["id"])
+
+        for claim in item.claims[properties["part of"]]:
+            if claim.getTarget() == dd_item:
+                wd.add_reference_date(repo, claim, properties["retrieved"])
+                wd.add_reference(repo, claim, properties["stated in"], dd_item)
+
+
+
 def preview_wikidata_all():
     for file in files:
         preview_wikidata_records(file)
@@ -259,6 +305,16 @@ def create_dd_new_items_all():
         create_dd_new_items(file)
 
 
+def add_dd_claims_all():
+    for file in files:
+        add_dd_claims(file)
+
+
+def add_dd_sources_all():
+    for file in files:
+        add_dd_sources(file)
+
+
 def test_invalid_lanuages():
     local_site = pywikibot.Site("en", "cawiki")
     repo = local_site.data_repository()
@@ -279,6 +335,8 @@ if __name__ == "__main__":
             "create_wikidata_records_all": create_wikidata_records_all,
             "add_wikidata_claims_all": add_wikidata_claims_all,
             "create_dd_new_items_all": create_dd_new_items_all,
+            "add_dd_claims_all": add_dd_claims_all,
+            "add_dd_sources_all": add_dd_sources_all,
             "test_invalid_lanuages": test_invalid_lanuages
         }
     )
