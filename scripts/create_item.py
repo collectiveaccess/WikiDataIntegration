@@ -10,5 +10,5 @@ repo = site.data_repository()
 # data = {"labels": {"en": label}, "descriptions": {"en": "description"}}
 # wd.create_item(site, data)
 
-data = {"labels": {"en": 'foobar 1234'}, "descriptions": {"en": 'foobar 1234'}}
+data = {"labels": {"en": "foobar 1234"}, "descriptions": {"en": "foobar 1234"}}
 wd.import_item(site, data)

@@ -345,7 +345,7 @@ def get_claim_value(claim, include_qid=True):
     if claim.type == "wikibase-item":
         labels = claim.getTarget().labels
         languages = [lang for lang in labels]
-        label = labels['en'] if 'en' in languages else labels[languages[0]]
+        label = labels["en"] if "en" in languages else labels[languages[0]]
         if include_qid:
             value = claim.target.title() + " " + label
         else:

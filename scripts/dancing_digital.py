@@ -161,7 +161,7 @@ def add_wikidata_sources(filename, import_sitelinks):
         # if index < 16:
         #     continue
 
-        print(index, row["label"], row['id'])
+        print(index, row["label"], row["id"])
 
         item = pywikibot.ItemPage(repo, row["wikidata.org id"])
         item_dict = item.get()
@@ -177,7 +177,7 @@ def add_wikidata_sources(filename, import_sitelinks):
 
             for claim in claims:
                 # skip commonsMedia claims since we don't import them
-                if claim.type == 'commonsMedia':
+                if claim.type == "commonsMedia":
                     continue
 
                 console("claim", claim.id, wd.get_claim_value(claim))
@@ -190,7 +190,6 @@ def add_wikidata_sources(filename, import_sitelinks):
                         ):
                             local_claim = l_claim
                             console("local_claim", wd.get_claim_value(l_claim))
-
 
                 for claim_source in claim.sources:
                     new_sources = []
@@ -309,7 +308,6 @@ def add_dd_sources(filename):
             if claim.getTarget() == dd_item:
                 wd.add_reference_date(repo, claim, properties["retrieved"])
                 wd.add_reference(repo, claim, properties["stated in"], dd_item)
-
 
 
 def preview_wikidata_all():
