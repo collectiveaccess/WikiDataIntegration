@@ -67,11 +67,13 @@ def create_wikidata_records(filename, import_sitelinks):
     site = pywikibot.Site("wikidata", "wikidata")
     repo = site.data_repository()
 
-
     df = pd.read_csv(data_path / "wikidata_org" / filename)
     for index, row in df.iterrows():
+        # if row['label'] != 'Pina Bausch and the Tanztheater':
+        #     continue
+
         # check if item exists in local site
-        results = wd.item_exists(local_site, row["label"], row['language'])
+        results = wd.item_exists(local_site, row["label"], row["language"])
         existing = False
 
         for result in results:
@@ -82,14 +84,14 @@ def create_wikidata_records(filename, import_sitelinks):
                     existing = True
             # check if any of the existing records have same description and
             # label as current row
-            elif 'label' in result and result['label']:
+            elif "label" in result and result["label"]:
                 if (
                     result["description"] == row["description"]
                     and result["label"] == row["label"]
                 ):
                     existing = True
-            elif 'aliases' in result:
-                for alias in result['aliases']:
+            elif "aliases" in result:
+                for alias in result["aliases"]:
                     if (
                         result["description"] == row["description"]
                         and alias == row["label"]
@@ -98,7 +100,7 @@ def create_wikidata_records(filename, import_sitelinks):
         if existing:
             continue
 
-        print(index, row['label'], existing)
+        print(index, row["label"], existing)
 
         # add item from wikidata.org to local site
         item = pywikibot.ItemPage(repo, row["wikidata.org id"])
