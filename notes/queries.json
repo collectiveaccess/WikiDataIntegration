@@ -1,0 +1,30 @@
+// https://www.mediawiki.org/wiki/Wikibase/API
+
+
+// action=wbsetclaim
+
+
+{
+  "id":"Q592$5627445f-43cb-ed6d-3adb-760e85bd17ee",
+  "type":"claim",
+  "mainsnak":{"snaktype":"value","property":"P345","datavalue":{"value":"Hi","type":"string"}}
+}
+
+// action=wbsetclaim
+
+
+{
+  "id":"Q592$5627445f-43cb-ed6d-3adb-760e85bd17ee",
+  "type":"statement",
+  "mainsnak":{"snaktype":"value","property":"P345","datavalue":{"value":"City","type":"string"}},
+  "references":[
+    {
+      "snaks":{
+        "P2163":[{"snaktype":"value","property":"P2163","datavalue":{"value":"http://example.com","type":"string"}}]
+      },
+      "snaks-order":["P2163"]
+    }
+  ],
+  "rank":"normal"
+}
+
