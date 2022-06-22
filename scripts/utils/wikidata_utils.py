@@ -281,7 +281,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
 
     elif claim.type == "quantity":
         if not claim_value.get_unit_item():
-            return
+            return claim_value
 
         unit_dict = claim_value.get_unit_item().get()
         # check if unit exists locally
