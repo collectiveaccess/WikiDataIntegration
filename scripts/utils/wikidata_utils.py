@@ -95,8 +95,17 @@ def edit_descriptions(item, new_descriptions):
 def edit_entity(item, data):
     """edit label, description, alias and sitelinks for a given item"""
     try:
-        item.editEntity(data, summary="Setting label, description, alias, sitelinks")
+        item.editEntity(data, summary="Setting item data.")
         return item
+    except pywikibot.exceptions.OtherPageSaveError as err:
+        if err.reason.code == "not-recognized-language":
+            langs = set()
+            for key in data.keys():
+                langs.update(data[key].keys())
+
+            print(langs - set(allowed_languages))
+        else:
+            logger.error(f"Could not edit item: {err}")
     except:
         if "en" in data["labels"]:
             lang = "en"
