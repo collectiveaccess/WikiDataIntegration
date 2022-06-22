@@ -122,7 +122,10 @@ def add_wikidata_claims(filename, import_sitelinks):
 
     df = pd.read_csv(data_path / "wikidata_org" / filename)
     for index, row in df.iterrows():
-        print(index, row["label"])
+        # if index != 28:
+        #     continue
+
+        print(index, row["label"], row["id"])
 
         item = pywikibot.ItemPage(repo, row["wikidata.org id"])
         item_dict = item.get()
@@ -131,22 +134,15 @@ def add_wikidata_claims(filename, import_sitelinks):
         # iterate over all the wikidata.org claims
         for property, values in item_dict["claims"].items():
             for claim in values:
-                try:
-                    new_claim_value = wd.convert_to_local_claim_value(
-                        local_site, local_repo, claim, import_sitelinks
-                    )
-                except:
-                    print(f"error new_claim_value: {row['label']}, {property}")
+                # if claim.id != 'P2048':
+                #     continue
 
+                new_claim_value = wd.convert_to_local_claim_value(
+                    local_site, local_repo, claim, import_sitelinks
+                )
                 if new_claim_value:
-                    try:
-                        wd.add_claim(repo, local_item, property, new_claim_value)
-                    except pywikibot.exceptions.OtherPageSaveError:
-                        print(f"error add_claim: {row['label']}, {new_claim_value}")
-                    except pywikibot.exceptions.APIMWError:
-                        print(f"error add_claim: {row['label']}, {new_claim_value}")
-                    except:
-                        print(f"error add_claim: {row['label']}, {new_claim_value}")
+                    wd.add_claim(repo, local_item, property, new_claim_value)
+
 
 def console(*args):
     # print(args)
