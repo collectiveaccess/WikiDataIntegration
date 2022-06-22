@@ -18,7 +18,12 @@ coor_prop = test_properties["Test coordinate"]
 birthday_prop = test_properties["date of birth2"]
 domain_prop = test_properties["top-level domainn"]
 stated_prop = test_properties["stated in"]
+url_prop = test_properties["reference URL"]
 
+
+# add claim with url
+statement = wd.add_claim(repo, item, url_prop, "https://example.com")
+wd.add_reference(repo, statement, url_prop, "https://example.com")
 
 # add claim with string value
 wd.add_claim(repo, item, api_prop, "abc")
