@@ -142,9 +142,13 @@ def add_claim(repo, item, property, value):
 
     # create new claim
     new_claim = pywikibot.Claim(repo, property)
-    new_claim.setTarget(value)
-    item.addClaim(new_claim, summary="Add claim.")
-    return new_claim
+    try:
+        new_claim.setTarget(value)
+        item.addClaim(new_claim, summary="Add claim.")
+        logger.info(f"Add claim: {item.id} {property} {value}")
+        return new_claim
+    except:
+        logger.error(f"Could not add claim: {item.id} {property} {value}")
 
 
 def remove_claim(item, property):
@@ -154,6 +158,7 @@ def remove_claim(item, property):
 
     for claim in item.claims[property]:
         item.removeClaims(claim, summary="Remove claim.")
+        logger.info(f"Remove claim: {item.id} {property}")
 
 
 def add_qualifier(repo, claim, property, value):
@@ -168,6 +173,7 @@ def add_qualifier(repo, claim, property, value):
     new_qualifier = pywikibot.Claim(repo, property)
     new_qualifier.setTarget(value)
     claim.addQualifier(new_qualifier, summary="Add qualifier.")
+    logger.info(f"Add qualifier: {claim.id} {property} {value}")
     return new_qualifier
 
 
@@ -183,8 +189,11 @@ def remove_qualifier(item, statement_property, qualifier_property):
         for qualifier in claim.qualifiers[qualifier_property]:
             try:
                 claim.removeQualifier(qualifier, summary="Remove qualifier.")
+                logger.info(f"Remove qualifier: {item.id} {qualifier_property}")
             except:
-                print(f"WARNING: could not delete qualifier {qualifier_property}")
+                logger.error(
+                    f"Could not delete qualifier {item.id} {qualifier_property}"
+                )
 
 
 def add_reference(repo, claim, property, value):
@@ -197,7 +206,11 @@ def add_reference(repo, claim, property, value):
 
     new_source = pywikibot.Claim(repo, property)
     new_source.setTarget(value)
-    claim.addSources([new_source], summary="Adding sources.")
+    try:
+        claim.addSources([new_source], summary="Adding sources.")
+        logger.info(f"Add source: {claim.id} {property} {value}")
+    except:
+        logger.error(f"add_reference error: {claim.id} {property} {value}")
 
 
 def add_reference_date(repo, claim, property, source_date=date.today()):
@@ -226,7 +239,8 @@ def remove_reference(item, statement_property, reference_property):
                         sources.append(old_claim)
 
         if len(sources) > 0:
-            claim.removeSources(sources, summary="Removed source(s).")
+            claim.removeSources(sources, summary="Removed sources.")
+            logger.info(f"Remove sources: {claim.id} {reference_property}")
 
 
 def import_item(site, item_dict, import_sitelinks=True):
