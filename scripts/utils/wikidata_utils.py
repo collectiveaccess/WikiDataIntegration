@@ -323,7 +323,7 @@ def get_claim_value(claim, include_qid=True):
     elif claim.type == "time":
         value = claim.target.toTimestr()
     elif claim.type == "globe-coordinate":
-        value = claim.getTarget().lat + " " + claim.getTarget().lon
+        value = f"{claim.getTarget().lat} {claim.getTarget().lon}"
     elif claim.type == "quantity":
         value = claim.target.amount.to_eng_string()
     else:
