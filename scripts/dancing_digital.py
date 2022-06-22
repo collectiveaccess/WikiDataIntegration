@@ -59,31 +59,54 @@ def save_wikidata_to_csv(filename):
     new_df.to_csv(data_path / "wikidata_org" / filename, index=False)
 
 
-def create_existing_records(filename, import_sitelinks):
-    local_site = pywikibot.Site("en", "cawikidev")
+def create_wikidata_records(filename, import_sitelinks):
+    """Read csv of records from wikidata.org. Create item records in local
+    wikibase instance."""
+    local_site = pywikibot.Site("en", "cawiki")
     site = pywikibot.Site("wikidata", "wikidata")
     repo = site.data_repository()
 
+
     df = pd.read_csv(data_path / "wikidata_org" / filename)
     for index, row in df.iterrows():
-        results = wd.item_exists(local_site, row["label"])
+        # check if item exists in local site
+        results = wd.item_exists(local_site, row["label"], row['language'])
         existing = False
+
         for result in results:
-            if (
-                result["description"] == row["description"]
-                and result["label"] == row["label"]
-            ):
-                existing = True
+            # if no description, check if any of the existing records have same
+            # label as the current row
+            if pd.isna(row["description"]):
+                if result["label"] == row["label"]:
+                    existing = True
+            # check if any of the existing records have same description and
+            # label as current row
+            elif 'label' in result and result['label']:
+                if (
+                    result["description"] == row["description"]
+                    and result["label"] == row["label"]
+                ):
+                    existing = True
+            elif 'aliases' in result:
+                for alias in result['aliases']:
+                    if (
+                        result["description"] == row["description"]
+                        and alias == row["label"]
+                    ):
+                        existing = True
         if existing:
             continue
 
+        print(index, row['label'], existing)
+
+        # add item from wikidata.org to local site
         item = pywikibot.ItemPage(repo, row["wikidata.org id"])
         item_dict = item.get()
         new_item = wd.import_item(local_site, item_dict, import_sitelinks)
 
-        print("create_record:", row["label"])
-        df.at[index, "id"] = new_item.getID()
-    df.to_csv(data_path / "wikidata_org" / filename, index=False)
+        if new_item:
+            df.at[index, "id"] = new_item.getID()
+            df.to_csv(data_path / "wikidata_org" / filename, index=False)
 
 
 def add_existing_claims(filename, import_sitelinks):
@@ -196,9 +219,9 @@ def save_wikidata_to_csv_all():
         save_wikidata_to_csv(file)
 
 
-def create_existing_records_all(import_sitelinks=False):
+def create_wikidata_records_all(import_sitelinks=False):
     for file in files:
-        create_existing_records(file, import_sitelinks)
+        create_wikidata_records(file, import_sitelinks)
 
 
 def add_existing_claims_all(import_sitelinks=False):
@@ -216,7 +239,7 @@ if __name__ == "__main__":
         {
             "preview_wikidata_all": preview_wikidata_all,
             "save_wikidata_to_csv_all": save_wikidata_to_csv_all,
-            "create_existing_records_all": create_existing_records_all,
+            "create_wikidata_records_all": create_wikidata_records_all,
             "add_existing_claims_all": add_existing_claims_all,
             "add_existing_sources_qualifiers_all": add_existing_sources_qualifiers_all,
         }
