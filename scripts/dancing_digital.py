@@ -143,7 +143,7 @@ def console(*args):
     pass
 
 
-def add_wikidata_sources(filename, import_sitelinks):
+def update_wikidata_claims(filename, import_sitelinks):
     """add sources to wikidata claims."""
     local_site = pywikibot.Site("en", "cawiki")
     local_repo = local_site.data_repository()
@@ -154,6 +154,8 @@ def add_wikidata_sources(filename, import_sitelinks):
     for index, row in df.iterrows():
         # if index < 16:
         #     continue
+        # if row['id'] != 'Q567':
+        #     continue
 
         print(index, row["label"], row["id"])
 
@@ -163,7 +165,7 @@ def add_wikidata_sources(filename, import_sitelinks):
 
         # iterate over all the wikidata.org claims
         for property, claims in item_dict["claims"].items():
-            # if property != "P27":
+            # if property != "P54":
             #     continue
 
             console("--------------")
@@ -179,67 +181,129 @@ def add_wikidata_sources(filename, import_sitelinks):
                 # get the corresponding local claim
                 if claim.id in local_item.claims:
                     for l_claim in local_item.claims[claim.id]:
+
                         if wd.get_claim_value(l_claim, False) == wd.get_claim_value(
                             claim, False
                         ):
                             local_claim = l_claim
-                            console("local_claim", wd.get_claim_value(l_claim))
-
-                for claim_source in claim.sources:
-                    new_sources = []
-                    console("  claim_source", len(claim_source))
-                    for source_property, source_values in claim_source.items():
-                        console("    property & values", source_property)
-
-                        # NOTE:skip P4656 "Wikimedia import URL"
-                        # since we don't have wikipedia pages.
-                        # https://phabricator.wikimedia.org/T301243
-                        if source_property in ["P4656"]:
-                            continue
-                        # NOTE: skip reference url since there is a bug with saving URL
-                        if source_property in ["P854"]:
-                            continue
-
-                        for source_claim in source_values:
-                            source_value = wd.convert_to_local_claim_value(
-                                local_site,
-                                local_repo,
-                                source_claim,
-                                import_sitelinks,
-                            )
                             console(
-                                "      source_value: ",
-                                source_value,
-                                wd.get_claim_value(source_claim),
+                                "local_claim", l_claim.id, wd.get_claim_value(l_claim)
                             )
 
-                            # check is source exists locally
-                            exists = False
-                            for l_source in local_claim.sources:
-                                if source_property in l_source.keys():
-                                    for lll_source in l_source[source_property]:
-                                        if lll_source.getTarget() == source_value:
-                                            exists = True
-                            console("exists", exists)
+                add_source_to_wikidata_claim(row, claim, local_claim, import_sitelinks)
+                add_qualifier_to_wikidata_claim(
+                    row, claim, local_claim, import_sitelinks
+                )
 
-                            # add new source claim
-                            if not exists:
-                                try:
-                                    new_source = pywikibot.Claim(repo, source_property)
-                                    new_source.setTarget(source_value)
-                                except:
-                                    print("new_source target", source_property)
-                                new_sources.append(new_source)
 
-                    if len(new_sources) > 0:
-                        console("--add sources to claim", len(new_sources))
-                        try:
-                            local_claim.addSources(
-                                new_sources, summary="Adding sources."
-                            )
-                            logger.info(f'Sources added: {row["id"]} {property}')
-                        except:
-                            logger.error(f'Sources not saved: {row["id"]} {property}')
+def add_qualifier_to_wikidata_claim(row, claim, local_claim, import_sitelinks):
+    local_site = pywikibot.Site("en", "cawiki")
+    local_repo = local_site.data_repository()
+    site = pywikibot.Site("wikidata", "wikidata")
+    repo = site.data_repository()
+
+    # claim.qualifiers returns an ordered dictionary
+    for qualifier_property, qualifier_claims in claim.qualifiers.items():
+        console("    property & values", qualifier_property)
+
+        for qualifier_claim in qualifier_claims:
+            qualifier_value = wd.convert_to_local_claim_value(
+                local_site,
+                local_repo,
+                qualifier_claim,
+                import_sitelinks,
+            )
+            console(
+                "      qualifier_value: ",
+                qualifier_value,
+                wd.get_claim_value(qualifier_claim),
+            )
+
+            # check is source exists locally
+            exists = False
+            if qualifier_property in local_claim.qualifiers:
+                for l_source in local_claim.qualifiers[qualifier_property]:
+                    if l_source.getTarget() == qualifier_value:
+                        exists = True
+            console("exists", exists)
+
+            # add new source claim
+            if not exists:
+                try:
+                    new_claim = pywikibot.Claim(repo, qualifier_property)
+                    new_claim.setTarget(qualifier_value)
+                    local_claim.addQualifier(new_claim, summary="Add qualifier.")
+                    logger.info(
+                        f"Add qualifier: {claim.id} "
+                        f"{qualifier_property} {qualifier_value}"
+                    )
+                except:
+                    logger.error(
+                        f"Qualifier not added: {claim.id} "
+                        f"{qualifier_property} {qualifier_value}"
+                    )
+
+
+def add_source_to_wikidata_claim(row, claim, local_claim, import_sitelinks):
+    local_site = pywikibot.Site("en", "cawiki")
+    local_repo = local_site.data_repository()
+    site = pywikibot.Site("wikidata", "wikidata")
+    repo = site.data_repository()
+
+    # claim.sources returns a list or ordered dictionariers
+    for claim_source in claim.sources:
+        new_sources = []
+        console("  claim_source", len(claim_source))
+        for source_property, source_values in claim_source.items():
+            console("    property & values", source_property)
+
+            # NOTE:skip P4656 "Wikimedia import URL"
+            # since we don't have wikipedia pages.
+            # https://phabricator.wikimedia.org/T301243
+            if source_property in ["P4656"]:
+                continue
+            # NOTE: skip reference url since there is a bug with saving URL
+            if source_property in ["P854"]:
+                continue
+
+            for source_claim in source_values:
+                source_value = wd.convert_to_local_claim_value(
+                    local_site,
+                    local_repo,
+                    source_claim,
+                    import_sitelinks,
+                )
+                console(
+                    "      source_value: ",
+                    source_value,
+                    wd.get_claim_value(source_claim),
+                )
+
+                # check is source exists locally
+                exists = False
+                for l_source in local_claim.sources:
+                    if source_property in l_source.keys():
+                        for ll_source in l_source[source_property]:
+                            if ll_source.getTarget() == source_value:
+                                exists = True
+                console("exists", exists)
+
+                # add new source claim
+                if not exists:
+                    try:
+                        new_source = pywikibot.Claim(repo, source_property)
+                        new_source.setTarget(source_value)
+                    except:
+                        print("new_source target", source_property)
+                    new_sources.append(new_source)
+
+        if len(new_sources) > 0:
+            console("--add sources to claim", len(new_sources))
+            try:
+                local_claim.addSources(new_sources, summary="Adding sources.")
+                logger.info(f'Sources added: {row["id"]} {local_claim.id}')
+            except:
+                logger.error(f'Sources not saved: {row["id"]} {local_claim.id}')
 
 
 def create_dd_new_items(filename):
@@ -319,9 +383,9 @@ def create_wikidata_records_all(import_sitelinks=False):
         create_wikidata_records(file, import_sitelinks)
 
 
-def add_wikidata_sources_all(import_sitelinks=False):
+def update_wikidata_claims_all(import_sitelinks=False):
     for file in files:
-        add_wikidata_sources(file, import_sitelinks)
+        update_wikidata_claims(file, import_sitelinks)
 
 
 def add_wikidata_claims_all(import_sitelinks=False):
@@ -380,7 +444,7 @@ if __name__ == "__main__":
             "save_wikidata_to_csv_all": save_wikidata_to_csv_all,
             "create_wikidata_records_all": create_wikidata_records_all,
             "add_wikidata_claims_all": add_wikidata_claims_all,
-            "add_wikidata_sources_all": add_wikidata_sources_all,
+            "update_wikidata_claims_all": update_wikidata_claims_all,
             "create_basic_dd_records": create_basic_dd_records,
             "create_dd_new_items_all": create_dd_new_items_all,
             "add_dd_claims_all": add_dd_claims_all,
