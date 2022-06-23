@@ -3,6 +3,10 @@ from pywikibot.data import api
 from datetime import date
 from utils.logger import logger
 from constants.languages import invalid_languages, allowed_languages
+import requests
+
+WIKI_BASE_URL = "https://test.wikidata.org"
+WIKI_QUERY_URL = "https://query.wikidata.org"
 
 
 def validate_create_data(data, key):
@@ -397,3 +401,73 @@ def get_claim_value(claim, include_qid=False):
         value = claim.getTarget()
 
     return value
+
+
+def fetch_all_wikidata_properties():
+    """
+    get all properties from wikidata
+
+    https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
+    """
+
+    link = f"{WIKI_QUERY_URL}/sparql?format=json&query=SELECT%20%3Fproperty%20%3FpropertyLabel%20WHERE%20%7B%0A%20%20%20%20%3Fproperty%20a%20wikibase%3AProperty%20.%0A%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%0A%20%20%20%20%20%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22%20.%0A%20%20%20%7D%0A%20%7D%0A%0A"
+    response = requests.get(link)
+    results = response.json()["results"]["bindings"]
+
+    data = {}
+    for result in results:
+        property = result["property"]["value"].split("/")[-1]
+        value = result["propertyLabel"]["value"]
+        data[property] = value
+
+    return data
+
+
+def fetch_labels_for_ids(ids, lang="en"):
+    """
+    get labels for a given list of Q ids and property ids from wikidata
+
+    https://stackoverflow.com/questions/29179564/get-description-of-a-wikidata-property
+    https://www.wikidata.org/w/api.php?action=help&modules=wbgetentities
+    """
+
+    print("??? ids", len(ids))
+
+    ids = "|".join(ids)
+    link = f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities&ids={ids}&props=labels&languages={lang}&format=json"
+    response = requests.get(link)
+    results = response.json()["entities"]
+
+    data = {}
+    for prop, value in results.items():
+        if "labels" in value:
+            data[prop] = value["labels"][lang]["value"]
+
+    return data
+
+
+def get_ids_for_item(item):
+    """get all Q ids and property ids for an item."""
+    item_dict = item.get(item)
+    claim_ids = [prop for prop in item_dict["claims"]]
+
+    for prop, claims in item.claims.items():
+        for claim in claims:
+            if claim.type == "wikibase-item":
+                claim_ids.append(claim.target.title())
+
+        for claim in claims:
+            for source_dict in claim.sources:
+                for prop, sources in source_dict.items():
+                    claim_ids.append(prop)
+                    for source in sources:
+                        if source.type == "wikibase-item":
+                            claim_ids.append(source.target.title())
+
+            for prop, qualifiers in claim.qualifiers.items():
+                claim_ids.append(prop)
+                for qualifier in qualifiers:
+                    if qualifier.type == "wikibase-item":
+                        claim_ids.append(qualifier.target.title())
+
+    return claim_ids
