@@ -431,17 +431,30 @@ def fetch_labels_for_ids(ids, lang="en"):
     https://www.wikidata.org/w/api.php?action=help&modules=wbgetentities
     """
 
-    print("??? ids", len(ids))
-
-    ids = "|".join(ids)
-    link = f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities&ids={ids}&props=labels&languages={lang}&format=json"
-    response = requests.get(link)
-    results = response.json()["entities"]
+    # split ids list into multiple lists because wikidata API has max limit of 50 ids
+    chunk_size = 50
+    chunked_list = [ids[i : i + chunk_size] for i in range(0, len(ids), chunk_size)]
 
     data = {}
-    for prop, value in results.items():
-        if "labels" in value:
-            data[prop] = value["labels"][lang]["value"]
+
+    for chunk_ids in chunked_list:
+        ids_str = "|".join(chunk_ids)
+        link = f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities&ids={ids_str}&props=labels&languages={lang}&format=json"
+        response = requests.get(link)
+
+        if response.status_code == 200:
+            json = response.json()
+            if "error" not in json:
+                results = json["entities"]
+                for prop, value in results.items():
+                    if "labels" in value and lang in value["labels"]:
+                        data[prop] = value["labels"][lang]["value"]
+                    else:
+                        data[prop] = ""
+            else:
+                raise ValueError(json["error"]["info"])
+        else:
+            raise ValueError("Could not get labels for ids from wikidata API.")
 
     return data
 
