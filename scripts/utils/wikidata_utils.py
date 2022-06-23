@@ -264,6 +264,15 @@ def import_item(site, item_dict, import_sitelinks=True):
     return create_item(site, data, validation=False)
 
 
+def get_claim_language(claim_dict):
+    if "en" in claim_dict["labels"]:
+        lang = "en"
+    else:
+        lang = [k for k, v in claim_dict["labels"].items()][0]
+
+    return lang
+
+
 def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
     """When importing claims from wikidata.org, they often refer to items records
     (Q id) that exists in wikidata.org. This method searches if the item record
@@ -285,10 +294,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
             return claim_value
 
         unit_dict = claim_value.get_unit_item().get()
-        if "en" in unit_dict["labels"]:
-            lang = "en"
-        else:
-            lang = [k for k, v in unit_dict["labels"].items()][0]
+        lang = get_claim_language(unit_dict)
 
         # check if unit exists locally
         results = item_exists(site, unit_dict["labels"][lang])
@@ -308,10 +314,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
 
     elif claim.type == "wikibase-item":
         claim_item_dict = claim_value.get()
-        if "en" in claim_item_dict["labels"]:
-            lang = "en"
-        else:
-            lang = [k for k, v in claim_item_dict["labels"].items()][0]
+        lang = get_claim_language(claim_item_dict)
 
         # check if claim item exists locally
         results = item_exists(site, claim_item_dict["labels"][lang], lang)
@@ -369,9 +372,10 @@ def get_claim_value(claim, include_qid=True):
         if not claim.getTarget():
             return
 
-        labels = claim.getTarget().labels
-        languages = [lang for lang in labels]
-        label = labels["en"] if "en" in languages else labels[languages[0]]
+        claim_dict = claim.get()
+        lang = get_claim_language(claim_dict)
+        label = claim_dict["labels"][lang]
+
         if include_qid:
             value = claim.target.title() + " " + label
         else:
