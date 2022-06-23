@@ -366,7 +366,7 @@ def remove_identical_label_description(claim_item_dict):
     claim_item_dict["descriptions"] = new_descriptions
 
 
-def get_claim_value(claim, include_qid=True):
+def get_claim_value(claim, include_qid=False):
     """get the text value of a claim"""
     if claim.type == "wikibase-item":
         if not claim.getTarget():
@@ -383,9 +383,16 @@ def get_claim_value(claim, include_qid=True):
     elif claim.type == "time":
         value = claim.target.toTimestr()
     elif claim.type == "globe-coordinate":
-        value = f"{claim.getTarget().lat} {claim.getTarget().lon}"
+        value = {"latitude": claim.getTarget().lat, "longitude": claim.getTarget().lon}
     elif claim.type == "quantity":
-        value = claim.target.amount.to_eng_string()
+        if claim.target.unit == "1":
+            value = claim.target.amount.to_eng_string()
+        else:
+            unit_dict = claim.target.get_unit_item().get()
+            lang = get_claim_language(unit_dict)
+            value = (
+                claim.target.amount.to_eng_string() + " " + unit_dict["labels"][lang]
+            )
     else:
         value = claim.getTarget()
 
