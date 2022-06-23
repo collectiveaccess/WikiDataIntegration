@@ -271,6 +271,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
     from local wikidata. If record does not exists, create record in local
     wikidata, and return new record."""
     claim_value = claim.getTarget()
+
     if not claim_value:
         return
 
@@ -284,13 +285,18 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
             return claim_value
 
         unit_dict = claim_value.get_unit_item().get()
+        if "en" in unit_dict["labels"]:
+            lang = "en"
+        else:
+            lang = [k for k, v in unit_dict["labels"].items()][0]
+
         # check if unit exists locally
-        results = item_exists(site, unit_dict["labels"]["en"])
+        results = item_exists(site, unit_dict["labels"][lang])
         existing = False
         for result in results:
             if (
-                result["description"] == unit_dict["descriptions"]["en"]
-                and result["label"] == unit_dict["labels"]["en"]
+                result["description"] == unit_dict["descriptions"][lang]
+                and result["label"] == unit_dict["labels"][lang]
             ):
                 existing = True
                 new_unit_value = pywikibot.ItemPage(repo, result["id"])
@@ -302,21 +308,24 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
 
     elif claim.type == "wikibase-item":
         claim_item_dict = claim_value.get()
-        if "en" not in claim_item_dict["labels"]:
-            return
+        if "en" in claim_item_dict["labels"]:
+            lang = "en"
+        else:
+            lang = [k for k, v in claim_item_dict["labels"].items()][0]
 
         # check if claim item exists locally
-        results = item_exists(site, claim_item_dict["labels"]["en"])
+        results = item_exists(site, claim_item_dict["labels"][lang], lang)
         existing = False
+
         for result in results:
             if result["description"]:
                 if (
-                    result["description"] == claim_item_dict["descriptions"]["en"]
-                    and result["label"] == claim_item_dict["labels"]["en"]
+                    result["description"] == claim_item_dict["descriptions"][lang]
+                    and result["label"] == claim_item_dict["labels"][lang]
                 ):
                     existing = True
                     new_claim_value = pywikibot.ItemPage(repo, result["id"])
-            elif result["label"] == claim_item_dict["labels"]["en"]:
+            elif result["label"] == claim_item_dict["labels"][lang]:
                 existing = True
                 new_claim_value = pywikibot.ItemPage(repo, result["id"])
 
