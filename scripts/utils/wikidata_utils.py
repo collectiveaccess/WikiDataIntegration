@@ -505,7 +505,7 @@ def format_display_item_claims(item):
 
         for claim in claims:
             claim_data = {
-                "main_snak": format_display_claim(claim, prop, ids_dict),
+                **format_display_claim(claim, prop, ids_dict),
                 "id": claim.snak,
             }
 
@@ -522,12 +522,12 @@ def format_display_item_claims(item):
                     claim_data["qualifiers"][prop_q].append(qualifier_data)
 
             for source_dict in claim.sources:
-                source_dict_data = {"snaks": {}}
+                source_dict_data = {}
                 for prop_s, sources in source_dict.items():
-                    source_dict_data["snaks"][prop_s] = []
+                    source_dict_data[prop_s] = []
                     for source in sources:
                         source_data = format_display_claim(source, prop_s, ids_dict)
-                        source_dict_data["snaks"][prop_s].append(source_data)
+                        source_dict_data[prop_s].append(source_data)
 
                 claim_data["references"].append(source_dict_data)
 
