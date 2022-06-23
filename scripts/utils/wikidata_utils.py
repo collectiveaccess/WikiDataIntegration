@@ -449,28 +449,30 @@ def fetch_labels_for_ids(ids, lang="en"):
 def get_ids_for_item(item):
     """get all Q ids and property ids for an item."""
     item_dict = item.get(item)
-    claim_ids = [prop for prop in item_dict["claims"]]
+    claim_ids = set()
+
+    claim_ids.update([prop for prop in item_dict["claims"]])
 
     for prop, claims in item.claims.items():
         for claim in claims:
             if claim.type == "wikibase-item":
-                claim_ids.append(claim.target.title())
+                claim_ids.add(claim.target.title())
 
         for claim in claims:
             for source_dict in claim.sources:
                 for prop, sources in source_dict.items():
-                    claim_ids.append(prop)
+                    claim_ids.add(prop)
                     for source in sources:
                         if source.type == "wikibase-item":
-                            claim_ids.append(source.target.title())
+                            claim_ids.add(source.target.title())
 
             for prop, qualifiers in claim.qualifiers.items():
-                claim_ids.append(prop)
+                claim_ids.add(prop)
                 for qualifier in qualifiers:
                     if qualifier.type == "wikibase-item":
-                        claim_ids.append(qualifier.target.title())
+                        claim_ids.add(qualifier.target.title())
 
-    return claim_ids
+    return list(claim_ids)
 
 
 def format_display_claim(claim, prop, ids_dict):
