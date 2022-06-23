@@ -471,3 +471,79 @@ def get_ids_for_item(item):
                         claim_ids.append(qualifier.target.title())
 
     return claim_ids
+
+
+def format_display_claim(claim, prop, ids_dict):
+    """created a nested dictionary for an claims data"""
+
+    data = {
+        "property": prop,
+        "property_value": ids_dict[prop],
+        "data_type": claim.type,
+        "data_value": {},
+    }
+    if claim.type == "wikibase-item":
+        qid = claim.target.title()
+        data["data_value"]["id"] = qid
+        data["data_value"]["value"] = ids_dict[qid]
+        data["data_value"]["url"] = claim.target.full_url()
+    else:
+        data["data_value"]["value"] = get_claim_value(claim)
+
+    return data
+
+
+def format_display_item_claims(item):
+    """created a nested dictionary for an item claims, references, and qualifiers data"""
+
+    ids = get_ids_for_item(item)
+    ids_dict = fetch_labels_for_ids(ids, lang="en")
+
+    data = {}
+    for prop, claims in item.claims.items():
+        data[prop] = []
+
+        for claim in claims:
+            claim_data = {
+                "main_snak": format_display_claim(claim, prop, ids_dict),
+                "id": claim.snak,
+            }
+
+            if claim.qualifiers:
+                claim_data["qualifiers"] = {}
+
+            if claim.sources:
+                claim_data["references"] = []
+
+            for prop_q, qualifiers in claim.qualifiers.items():
+                claim_data["qualifiers"][prop_q] = []
+                for qualifier in qualifiers:
+                    qualifier_data = format_display_claim(qualifier, prop_q, ids_dict)
+                    claim_data["qualifiers"][prop_q].append(qualifier_data)
+
+            for source_dict in claim.sources:
+                source_dict_data = {"snaks": {}}
+                for prop_s, sources in source_dict.items():
+                    source_dict_data["snaks"][prop_s] = []
+                    for source in sources:
+                        source_data = format_display_claim(source, prop_s, ids_dict)
+                        source_dict_data["snaks"][prop_s].append(source_data)
+
+                claim_data["references"].append(source_dict_data)
+
+            data[prop].append(claim_data)
+
+    return data
+
+
+def format_display_item(item):
+    """created a nested dictionary for an item data"""
+    data = {}
+
+    item_dict = item.get()
+    data["labels"] = {k: v for k, v in item_dict["labels"].items()}
+    data["descriptions"] = {k: v for k, v in item_dict["descriptions"].items()}
+    data["aliases"] = {k: v for k, v in item_dict["aliases"].items()}
+    data["claims"] = format_display_item_claims(item)
+
+    return data
