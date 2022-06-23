@@ -357,6 +357,9 @@ def remove_identical_label_description(claim_item_dict):
 def get_claim_value(claim, include_qid=True):
     """get the text value of a claim"""
     if claim.type == "wikibase-item":
+        if not claim.getTarget():
+            return
+
         labels = claim.getTarget().labels
         languages = [lang for lang in labels]
         label = labels["en"] if "en" in languages else labels[languages[0]]
