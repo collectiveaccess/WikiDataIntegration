@@ -91,13 +91,7 @@ def create_wikidata_records(filename, import_sitelinks):
                     and result["label"] == row["label"]
                 ):
                     existing = True
-            elif "aliases" in result:
-                for alias in result["aliases"]:
-                    if (
-                        result["description"] == row["description"]
-                        and alias == row["label"]
-                    ):
-                        existing = True
+
         if existing:
             continue
 

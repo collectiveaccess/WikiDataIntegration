@@ -49,10 +49,10 @@ def item_exists(site, keyword, language="en"):
     api_request = api.Request(site=site, parameters=params)
     result = api_request.submit()
 
-    return process_item_exists_results(result["search"])
+    return process_item_exists_results(result["search"], language)
 
 
-def process_item_exists_results(results):
+def process_item_exists_results(results, language):
     """format search results from wikidata"""
     count = len(results)
     if count == 0:
@@ -61,11 +61,12 @@ def process_item_exists_results(results):
         tmp = []
         for result in results:
             description = result["description"] if "description" in result else None
-            label = result["label"] if "label" in result else None
-            lang = (
-                result["display"]["label"]["language"] if "display" in result else None
-            )
-            aliases = result["aliases"] if "aliases" in result else None
+            if "label" in result:
+                label = result["label"]
+            elif "aliases" in result:
+                label = result["aliases"][0]
+            else:
+                label = None
 
             tmp.append(
                 {
@@ -73,8 +74,7 @@ def process_item_exists_results(results):
                     "label": label,
                     "description": description,
                     "url": result["url"],
-                    "language": lang,
-                    "aliases": aliases,
+                    "language": language,
                 }
             )
         return tmp
