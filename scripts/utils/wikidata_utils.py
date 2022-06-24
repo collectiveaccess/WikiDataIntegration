@@ -505,19 +505,21 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
         if include_pids:
             claim_ids.add(prop)
 
-        if include_qids:
-            for claim in claims:
-                if claim.type == "wikibase-item":
-                    claim_ids.add(claim.target.title())
-
         for claim in claims:
+            if include_qids:
+                if claim.type == "wikibase-item" and claim.target:
+                    claim_ids.add(claim.target.title())
+            if include_pids:
+                if claim.type == "wikibase-property" and claim.target:
+                    claim_ids.add(claim.target.getID())
+
             for source_dict in claim.sources:
                 for prop, sources in source_dict.items():
                     if include_pids:
                         claim_ids.add(prop)
                     if include_qids:
                         for source in sources:
-                            if source.type == "wikibase-item":
+                            if source.type == "wikibase-item" and source.target:
                                 claim_ids.add(source.target.title())
 
             for prop, qualifiers in claim.qualifiers.items():
@@ -525,7 +527,7 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
                     claim_ids.add(prop)
                 if include_qids:
                     for qualifier in qualifiers:
-                        if qualifier.type == "wikibase-item":
+                        if qualifier.type == "wikibase-item" and qualifier.target:
                             claim_ids.add(qualifier.target.title())
 
     return list(claim_ids)
