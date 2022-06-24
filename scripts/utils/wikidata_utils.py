@@ -1,11 +1,18 @@
 from datetime import date
 import re
+import sys
+from pathlib import Path
+import json
 import requests
 import pywikibot
 from pywikibot.data import api
 
 from utils.logger import logger
 from constants.languages import invalid_languages, allowed_languages
+
+data_path = Path(__file__).resolve().parent.parent.parent / "data"
+sys.path.append(str(data_path))
+
 
 WIKI_BASE_URL = "https://www.wikidata.org"
 WIKI_QUERY_URL = "https://query.wikidata.org"
@@ -487,30 +494,39 @@ def fetch_labels_for_ids(ids, lang="en"):
     return data
 
 
-def get_ids_for_item(item, item_json):
+def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
     """get all Q ids and property ids for an item."""
     claim_ids = set()
 
-    claim_ids.update([prop for prop in item_json["claims"]])
+    if include_pids:
+        claim_ids.update([prop for prop in item_json["claims"]])
 
     for prop, claims in item.claims.items():
-        for claim in claims:
-            if claim.type == "wikibase-item":
-                claim_ids.add(claim.target.title())
+        if include_pids:
+            claim_ids.add(prop)
+
+        if include_qids:
+            for claim in claims:
+                if claim.type == "wikibase-item":
+                    claim_ids.add(claim.target.title())
 
         for claim in claims:
             for source_dict in claim.sources:
                 for prop, sources in source_dict.items():
-                    claim_ids.add(prop)
-                    for source in sources:
-                        if source.type == "wikibase-item":
-                            claim_ids.add(source.target.title())
+                    if include_pids:
+                        claim_ids.add(prop)
+                    if include_qids:
+                        for source in sources:
+                            if source.type == "wikibase-item":
+                                claim_ids.add(source.target.title())
 
             for prop, qualifiers in claim.qualifiers.items():
-                claim_ids.add(prop)
-                for qualifier in qualifiers:
-                    if qualifier.type == "wikibase-item":
-                        claim_ids.add(qualifier.target.title())
+                if include_pids:
+                    claim_ids.add(prop)
+                if include_qids:
+                    for qualifier in qualifiers:
+                        if qualifier.type == "wikibase-item":
+                            claim_ids.add(qualifier.target.title())
 
     return list(claim_ids)
 
@@ -538,11 +554,27 @@ def format_display_claim(claim, prop, ids_dict):
     return data
 
 
+def format_ids_labels(item, item_json):
+    """create dictionary with property ids / item ids and their labels"""
+    qids = get_ids_for_item(item, item_json, include_pids=False, include_qids=True)
+    pids = get_ids_for_item(item, item_json, include_pids=True, include_qids=False)
+
+    # connect to wikidata.org API to get labels for qids
+    ids_dict = fetch_labels_for_ids(qids, lang="en")
+
+    # read file to get labels for pids
+    for path in Path(data_path).glob("wikdata_labels*.json"):
+        with open(str(path), "r") as file:
+            properties = json.loads(file.read())
+            for pid in pids:
+                ids_dict[pid] = properties[pid]
+
+    return ids_dict
+
+
 def format_display_item_claims(item, item_json):
     """created a nested dictionary for an item claims, references, and qualifiers data"""
-
-    ids = get_ids_for_item(item, item_json)
-    ids_dict = fetch_labels_for_ids(ids, lang="en")
+    ids_dict = format_ids_labels(item, item_json)
 
     data = {}
     for prop, claims in item.claims.items():
