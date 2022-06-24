@@ -372,6 +372,26 @@ def remove_identical_label_description(claim_item_dict):
     claim_item_dict["descriptions"] = new_descriptions
 
 
+def extract_description_from_image_data(claim, text):
+    match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
+    if match:
+        description = match.groups()[0]
+        match = re.search("([a-z]+)\|[0-9]+=(.*?)$", description)
+        if match:
+            value = {"url": claim.target.full_url(), "lang": match[1], "text": match[2]}
+        else:
+            value = {"url": claim.target.full_url(), "text": description}
+    else:
+        match = re.search("\|[dD]escription=(.*?)\s+\|", text)
+        if match:
+            value = {"url": claim.target.full_url(), "text": match[1]}
+        else:
+
+            value = {"url": claim.target.full_url(), "text": claim.target.title()}
+
+    return value
+
+
 def get_claim_value(claim, include_qid=False):
     """get the text value of a claim"""
     if claim.type == "wikibase-item":
@@ -399,6 +419,10 @@ def get_claim_value(claim, include_qid=False):
             value = (
                 claim.target.amount.to_eng_string() + " " + unit_dict["labels"][lang]
             )
+    elif claim.type == "commonsMedia":
+        value = extract_description_from_image_data(claim, claim.target.text)
+    elif claim.type == "monolingualtext":
+        value = claim.target.text
     else:
         value = claim.getTarget()
 
