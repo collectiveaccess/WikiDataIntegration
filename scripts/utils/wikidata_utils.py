@@ -1,11 +1,13 @@
+from datetime import date
+import re
+import requests
 import pywikibot
 from pywikibot.data import api
-from datetime import date
+
 from utils.logger import logger
 from constants.languages import invalid_languages, allowed_languages
-import requests
 
-WIKI_BASE_URL = "https://test.wikidata.org"
+WIKI_BASE_URL = "https://www.wikidata.org"
 WIKI_QUERY_URL = "https://query.wikidata.org"
 
 
@@ -459,12 +461,11 @@ def fetch_labels_for_ids(ids, lang="en"):
     return data
 
 
-def get_ids_for_item(item):
+def get_ids_for_item(item, item_json):
     """get all Q ids and property ids for an item."""
-    item_dict = item.get(item)
     claim_ids = set()
 
-    claim_ids.update([prop for prop in item_dict["claims"]])
+    claim_ids.update([prop for prop in item_json["claims"]])
 
     for prop, claims in item.claims.items():
         for claim in claims:
@@ -508,10 +509,10 @@ def format_display_claim(claim, prop, ids_dict):
     return data
 
 
-def format_display_item_claims(item):
+def format_display_item_claims(item, item_json):
     """created a nested dictionary for an item claims, references, and qualifiers data"""
 
-    ids = get_ids_for_item(item)
+    ids = get_ids_for_item(item, item_json)
     ids_dict = fetch_labels_for_ids(ids, lang="en")
 
     data = {}
@@ -551,14 +552,33 @@ def format_display_item_claims(item):
     return data
 
 
+def format_item_field(item_json, type):
+    return {lang: values["value"] for lang, values in item_json[type].items()}
+
+
+def format_item_aliases(item_json):
+    data = {}
+    for lang, values in item_json["aliases"].items():
+        data[lang] = []
+        for value in values:
+
+            data[lang].append(value["value"])
+
+    return data
+
+
 def format_display_item(item):
     """created a nested dictionary for an item data"""
     data = {}
+    item_json = item.toJSON()
 
-    item_dict = item.get()
-    data["labels"] = {k: v for k, v in item_dict["labels"].items()}
-    data["descriptions"] = {k: v for k, v in item_dict["descriptions"].items()}
-    data["aliases"] = {k: v for k, v in item_dict["aliases"].items()}
-    data["claims"] = format_display_item_claims(item)
+    for field in ["labels", "descriptions", "aliases"]:
+        if field in item_json:
+            if field == "aliases":
+                data[field] = format_item_aliases(item_json)
+            else:
+                data[field] = format_item_field(item_json, field)
+
+    data["claims"] = format_display_item_claims(item, item_json)
 
     return data
