@@ -423,6 +423,8 @@ def get_claim_value(claim, include_qid=False):
         value = extract_description_from_image_data(claim, claim.target.text)
     elif claim.type == "monolingualtext":
         value = claim.target.text
+    elif claim.type == "geo-shape":
+        value = claim.target.toWikibase()
     else:
         value = claim.getTarget()
 
@@ -527,6 +529,9 @@ def format_display_claim(claim, prop, ids_dict):
         data["data_value"]["id"] = qid
         data["data_value"]["value"] = ids_dict[qid]
         data["data_value"]["url"] = claim.target.full_url()
+    elif claim.type == "geo-shape":
+        data["data_value"]["value"] = get_claim_value(claim)
+        data["data_value"]["url"] = claim.target.page.full_url()
     else:
         data["data_value"]["value"] = get_claim_value(claim)
 
