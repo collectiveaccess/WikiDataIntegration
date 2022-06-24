@@ -65,7 +65,17 @@ def read_item(item_id):
 def read_search(keyword=None):
     site = pywikibot.Site("wikidata", "wikidata")
     if keyword:
-        content = wd.item_exists(site, keyword)
+        results = wd.item_exists(site, keyword)
+
+        content = []
+        for res in results:
+            if res["description"]:
+                content.append(
+                    {"id": res["id"], "label": f"{res['label']} ({res['description']})"}
+                )
+            else:
+                content.append({"id": res["id"], "label": f"{res['label']}"})
+
     else:
         content = []
 
