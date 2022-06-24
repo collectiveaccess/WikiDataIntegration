@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import re
+import json
 
 import pywikibot
 from fastapi import FastAPI, HTTPException
@@ -36,6 +37,10 @@ def read_item(item_id):
 
     if item.exists():
         content = wd.format_display_item(item)
+        try:
+            json.dumps(content)
+        except TypeError as err:
+            content = {"error": err.args[0]}
     else:
         raise HTTPException(status_code=404, detail="Item not found")
 
