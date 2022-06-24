@@ -6,6 +6,7 @@ import json
 import pywikibot
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 project_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_path))
@@ -14,6 +15,19 @@ sys.path.append(str(project_path / "scripts"))
 import scripts.utils.wikidata_utils as wd
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # need to set headers to ensure we are using utf-8
 headers = {"Content-Type": "application/json;charset=UTF-8", "Charset": "utf-8"}
