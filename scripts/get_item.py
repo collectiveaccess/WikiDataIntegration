@@ -16,7 +16,7 @@ for key in item_dict.keys():
             print(">>>")
             print("property: ", property)
             for claim in values:
-                claim_value = claim.getTarget()
+                claim_value = claim.target
                 print(claim_value)
     else:
         print(f"{key}: ", item_dict[key])

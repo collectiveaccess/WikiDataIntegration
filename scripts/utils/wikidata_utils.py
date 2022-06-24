@@ -150,7 +150,7 @@ def add_claim(repo, item, property, value):
     # return claim if it exists
     if property in item.claims:
         for claim in item.claims[property]:
-            if claim.getTarget() == value:
+            if claim.target == value:
                 return claim
 
     # create new claim
@@ -214,7 +214,7 @@ def add_reference(repo, claim, property, value):
     for source in claim.getSources():
         if property in source:
             for old_claim in source[property]:
-                if old_claim.getTarget() == value:
+                if old_claim.target == value:
                     return old_claim
 
     new_source = pywikibot.Claim(repo, property)
@@ -292,8 +292,8 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
     exists in the local wikidata. If record exists, return the record
     from local wikidata. If record does not exists, create record in local
     wikidata, and return new record."""
-    claim_value = claim.getTarget()
 
+    claim_value = claim.target
     if not claim_value:
         return
 

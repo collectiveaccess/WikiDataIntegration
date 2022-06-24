@@ -363,7 +363,7 @@ def add_dd_sources(filename):
         item = pywikibot.ItemPage(local_repo, row["id"])
 
         for claim in item.claims[properties["part of"]]:
-            if claim.getTarget() == dd_item:
+            if claim.target == dd_item:
                 wd.add_reference_date(repo, claim, properties["retrieved"])
                 wd.add_reference(repo, claim, properties["stated in"], dd_item)
 
