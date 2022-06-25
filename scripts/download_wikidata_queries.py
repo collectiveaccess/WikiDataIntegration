@@ -5,7 +5,7 @@ from os.path import exists
 import json
 import os
 
-import utils.wikidata_utils as wd
+import utils.wiki_queries as wq
 
 project_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_path))
@@ -21,7 +21,7 @@ else:
     for path in Path(project_path / "data").glob("wikdata_labels*.json"):
         os.remove(path)
 
-    properties = wd.fetch_all_wikidata_properties()
+    properties = wq.fetch_all_wikidata_properties()
     with open(filepath, "w") as outfile:
         json_object = json.dumps(properties, indent=2)
         outfile.write(json_object)
