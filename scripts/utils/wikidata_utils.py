@@ -3,19 +3,15 @@ import re
 import sys
 from pathlib import Path
 import json
-import requests
 import pywikibot
 from pywikibot.data import api
 
 from utils.logger import logger
 from constants.languages import invalid_languages, allowed_languages
+import utils.wiki_queries as wq
 
 data_path = Path(__file__).resolve().parent.parent.parent / "data"
 sys.path.append(str(data_path))
-
-
-WIKI_BASE_URL = "https://www.wikidata.org"
-WIKI_QUERY_URL = "https://query.wikidata.org"
 
 
 def validate_create_data(data, key):
@@ -379,74 +375,6 @@ def remove_identical_label_description(claim_item_dict):
     claim_item_dict["descriptions"] = new_descriptions
 
 
-def fetch_all_wikidata_properties():
-    """
-    get all properties from wikidata
-
-    https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
-    """
-
-    query = """
-    SELECT ?property ?propertyLabel WHERE {
-        ?property a wikibase:Property .
-        SERVICE wikibase:label {
-            bd:serviceParam wikibase:language "en" .
-        }
-    }
-    """
-
-    link = f"{WIKI_QUERY_URL}/sparql?format=json&query={query}"
-    response = requests.get(link)
-    results = response.json()["results"]["bindings"]
-
-    data = {}
-    for result in results:
-        property = result["property"]["value"].split("/")[-1]
-        value = result["propertyLabel"]["value"]
-        data[property] = value
-
-    return data
-
-
-def fetch_labels_for_ids(ids, lang="en"):
-    """
-    get labels for a given list of Q ids and property ids from wikidata
-
-    https://stackoverflow.com/questions/29179564/get-description-of-a-wikidata-property
-    https://www.wikidata.org/w/api.php?action=help&modules=wbgetentities
-    """
-
-    # split ids list into multiple lists because wikidata API has max limit of 50 ids
-    chunk_size = 50
-    chunked_list = [ids[i : i + chunk_size] for i in range(0, len(ids), chunk_size)]
-
-    data = {}
-
-    for chunk_ids in chunked_list:
-        ids_str = "|".join(chunk_ids)
-        link = (
-            f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities"
-            f"&ids={ids_str}&props=labels&languages={lang}&format=json"
-        )
-        response = requests.get(link)
-
-        if response.status_code == 200:
-            json = response.json()
-            if "error" not in json:
-                results = json["entities"]
-                for prop, value in results.items():
-                    if "labels" in value and lang in value["labels"]:
-                        data[prop] = value["labels"][lang]["value"]
-                    else:
-                        data[prop] = ""
-            else:
-                raise ValueError(json["error"]["info"])
-        else:
-            raise ValueError("Could not get labels for ids from wikidata API.")
-
-    return data
-
-
 def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
     """get all Q ids and property ids for an item."""
     claim_ids = set()
@@ -616,7 +544,7 @@ def format_ids_labels(item, item_json):
     pids = get_ids_for_item(item, item_json, include_pids=True, include_qids=False)
 
     # connect to wikidata.org API to get labels for qids
-    ids_dict = fetch_labels_for_ids(qids, lang="en")
+    ids_dict = wq.fetch_labels_for_ids(qids, lang="en")
 
     # read file to get labels for pids
     for path in Path(data_path).glob("wikdata_labels*.json"):
