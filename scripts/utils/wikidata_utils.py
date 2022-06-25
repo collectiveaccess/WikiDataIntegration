@@ -3,7 +3,6 @@ import re
 import sys
 from pathlib import Path
 import pywikibot
-from pywikibot.data import api
 
 from utils.logger import logger
 from constants.languages import invalid_languages, allowed_languages
@@ -42,50 +41,6 @@ def create_item(site, data, validation=True):
     if new_item.id != "-1":
         logger.info(f"Item created: {new_item.id}")
         return new_item
-
-
-def item_exists(site, keyword, language="en"):
-    """search wikidata for a given keyword"""
-    # https://stackoverflow.com/a/45050455
-    params = {
-        "action": "wbsearchentities",
-        "format": "json",
-        "language": language,
-        "type": "item",
-        "search": keyword,
-    }
-    api_request = api.Request(site=site, parameters=params)
-    result = api_request.submit()
-
-    return process_item_exists_results(result["search"], language)
-
-
-def process_item_exists_results(results, language):
-    """format search results from wikidata"""
-    count = len(results)
-    if count == 0:
-        return []
-    else:
-        tmp = []
-        for result in results:
-            description = result["description"] if "description" in result else None
-            if "label" in result:
-                label = result["label"]
-            elif "aliases" in result:
-                label = result["aliases"][0]
-            else:
-                label = None
-
-            tmp.append(
-                {
-                    "id": result["id"],
-                    "label": label,
-                    "description": description,
-                    "url": result["url"],
-                    "language": language,
-                }
-            )
-        return tmp
 
 
 def edit_labels(item, new_labels):
@@ -305,7 +260,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
         lang = get_claim_language(unit_dict)
 
         # check if unit exists locally
-        results = item_exists(site, unit_dict["labels"][lang])
+        results = wq.search_keyword(site, unit_dict["labels"][lang])
         existing = False
         for result in results:
             if (
@@ -325,7 +280,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
         lang = get_claim_language(claim_item_dict)
 
         # check if claim item exists locally
-        results = item_exists(site, claim_item_dict["labels"][lang], lang)
+        results = wq.search_keyword(site, claim_item_dict["labels"][lang], lang)
         existing = False
 
         for result in results:
@@ -352,7 +307,8 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
 
 
 def remove_identical_label_description(claim_item_dict):
-    """remove description if it has same value as label"""
+    """remove description if it has same value as label. Wikibase does not allow
+    a label and description to be equal"""
     if "labels" not in claim_item_dict:
         return
     if "descriptions" not in claim_item_dict:
@@ -374,8 +330,21 @@ def remove_identical_label_description(claim_item_dict):
     claim_item_dict["descriptions"] = new_descriptions
 
 
+def add_nested_ids(claim_type, claim_ids):
+    """get q ids for certain claim types"""
+    if claim_type.type == "wikibase-item" and claim_type.target:
+        claim_ids.add(claim_type.target.title())
+
+    if claim_type.type == "quantity" and claim_type.target:
+        if claim_type.target.unit != "1":
+            # target.unit is the url for wikidata item record
+            unit_url = claim_type.target.unit
+            id = unit_url.split("/")[-1]
+            claim_ids.add(id)
+
+
 def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
-    """get all Q ids and property ids for an item."""
+    """iterate through an item to get all item Q ids and property P ids"""
     claim_ids = set()
 
     if include_pids:
@@ -387,15 +356,7 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
 
         for claim in claims:
             if include_qids:
-                if claim.type == "wikibase-item" and claim.target:
-                    claim_ids.add(claim.target.title())
-
-                if claim.type == "quantity" and claim.target:
-                    if claim.target.unit != "1":
-                        # target.unit is the url for wikidata item record
-                        unit_url = claim.target.unit
-                        id = unit_url.split("/")[-1]
-                        claim_ids.add(id)
+                add_nested_ids(claim, claim_ids)
 
             if include_pids:
                 if claim.type == "wikibase-property" and claim.target:
@@ -407,33 +368,20 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
                         claim_ids.add(prop)
                     if include_qids:
                         for source in sources:
-                            if source.type == "wikibase-item" and source.target:
-                                claim_ids.add(source.target.title())
-
-                            if source.type == "quantity" and source.target:
-                                if source.target.unit != "1":
-                                    unit_url = source.target.unit
-                                    id = unit_url.split("/")[-1]
-                                    claim_ids.add(id)
+                            add_nested_ids(source, claim_ids)
 
             for prop, qualifiers in claim.qualifiers.items():
                 if include_pids:
                     claim_ids.add(prop)
                 if include_qids:
                     for qualifier in qualifiers:
-                        if qualifier.type == "wikibase-item" and qualifier.target:
-                            claim_ids.add(qualifier.target.title())
-
-                        if qualifier.type == "quantity" and qualifier.target:
-                            if qualifier.target.unit != "1":
-                                unit_url = qualifier.target.unit
-                                id = unit_url.split("/")[-1]
-                                claim_ids.add(id)
+                        add_nested_ids(qualifier, claim_ids)
 
     return list(claim_ids)
 
 
-def extract_value_from_image_data(claim):
+def format_commons_media_value(claim):
+    """for a commonsMedia claim, format the data value"""
     # NOTE: claim.target.text require a new api call
     text = claim.target.text
     match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
@@ -460,7 +408,7 @@ def extract_value_from_image_data(claim):
 
 
 def get_claim_value(claim, ids_dict, include_qid=False):
-    """get the text value of a claim"""
+    """get the value of a claim"""
     if not claim.target:
         return
 
@@ -526,8 +474,8 @@ def get_claim_value(claim, ids_dict, include_qid=False):
         return claim.target
 
 
-def format_display_claim(claim, prop, ids_dict):
-    """created a nested dictionary for an claims data"""
+def format_claim_data(claim, prop, ids_dict):
+    """created a nested dictionary for a claim"""
     data = {
         "property": prop,
         "property_value": ids_dict[prop],
@@ -555,18 +503,18 @@ def format_display_claim(claim, prop, ids_dict):
     return data
 
 
-def format_ids_labels(item, item_json):
-    """create dictionary with property ids / item ids and their labels"""
+def create_id_label_dictionary(item, item_json):
+    """create dictionary with ids (item Q id and property P id) and their labels"""
     ids = get_ids_for_item(item, item_json, include_pids=True, include_qids=True)
 
     # connect to wikidata.org API to get labels
-    return wq.fetch_labels_for_ids_sqarql(ids)
+    return wq.fetch_and_format_labels_for_ids_sqarql(ids)
 
 
 def format_display_item_claims(item, item_json):
     """created a nested dictionary for an item claims, references, and
     qualifiers data"""
-    ids_dict = format_ids_labels(item, item_json)
+    ids_dict = create_id_label_dictionary(item, item_json)
 
     data = {}
     for prop, claims in item.claims.items():
@@ -574,7 +522,7 @@ def format_display_item_claims(item, item_json):
 
         for claim in claims:
             claim_data = {
-                **format_display_claim(claim, prop, ids_dict),
+                **format_claim_data(claim, prop, ids_dict),
                 "id": claim.snak,
             }
 
@@ -587,7 +535,7 @@ def format_display_item_claims(item, item_json):
             for prop_q, qualifiers in claim.qualifiers.items():
                 claim_data["qualifiers"][prop_q] = []
                 for qualifier in qualifiers:
-                    qualifier_data = format_display_claim(qualifier, prop_q, ids_dict)
+                    qualifier_data = format_claim_data(qualifier, prop_q, ids_dict)
                     claim_data["qualifiers"][prop_q].append(qualifier_data)
 
             for source_dict in claim.sources:
@@ -595,7 +543,7 @@ def format_display_item_claims(item, item_json):
                 for prop_s, sources in source_dict.items():
                     source_dict_data[prop_s] = []
                     for source in sources:
-                        source_data = format_display_claim(source, prop_s, ids_dict)
+                        source_data = format_claim_data(source, prop_s, ids_dict)
                         source_dict_data[prop_s].append(source_data)
 
                 claim_data["references"].append(source_dict_data)
@@ -621,7 +569,9 @@ def format_item_aliases(item_json):
 
 
 def format_display_item(item):
-    """created a nested dictionary for an item data"""
+    """takes the json from a item and reshapes it to fit the needs of the
+    of our /items/{id} API endpoint
+    """
     data = {}
     item_json = item.toJSON()
 

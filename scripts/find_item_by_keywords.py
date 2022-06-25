@@ -1,5 +1,5 @@
 import pywikibot
-import utils.wikidata_utils as wd
+import utils.wiki_queries as wq
 
 """search test.wikidata.org by keywords"""
 
@@ -8,7 +8,7 @@ site = pywikibot.Site("test", "wikidata")
 keywords = ["foo", "foo2", "foo 06-07 1"]
 
 for keyword in keywords:
-    res = wd.item_exists(site, keyword)
+    res = wq.search_keyword(site, keyword)
     if len(res) == 0:
         print(f"{keyword}: zero items found")
     elif len(res) == 1:

@@ -5,6 +5,7 @@ import pywikibot
 import fire
 
 import utils.wikidata_utils as wd
+import utils.wiki_queries as wq
 from constants.wd_properties import properties
 from utils.logger import logger
 
@@ -19,7 +20,7 @@ def preview_wikidata_records(filename):
     df = pd.read_csv(data_path / filename)
     for index, row in df.iterrows():
         label = row["name"]
-        res = wd.item_exists(site, label)
+        res = wq.search_keyword(site, label)
 
         print("----")
         print(row)
@@ -44,7 +45,7 @@ def save_wikidata_to_csv(filename):
         #     continue
 
         label = row["name"]
-        results = wd.item_exists(site, label)
+        results = wq.search_keyword(site, label)
 
         if len(results) > 0:
             for result in results:
@@ -74,7 +75,7 @@ def create_wikidata_records(filename, import_sitelinks):
         #     continue
 
         # check if item exists in local site
-        results = wd.item_exists(local_site, row["label"], row["language"])
+        results = wq.search_keyword(local_site, row["label"], row["language"])
         existing = False
 
         for result in results:
@@ -331,7 +332,7 @@ def add_dd_claims(filename):
     site = pywikibot.Site("wikidata", "wikidata")
     repo = site.data_repository()
 
-    res = wd.item_exists(local_site, "Dancing Digital")
+    res = wq.search_keyword(local_site, "Dancing Digital")
     if len(res) == 1:
         dd_item = pywikibot.ItemPage(local_repo, res[0]["id"])
     else:
@@ -351,7 +352,7 @@ def add_dd_sources(filename):
     site = pywikibot.Site("wikidata", "wikidata")
     repo = site.data_repository()
 
-    res = wd.item_exists(local_site, "Dancing Digital")
+    res = wq.search_keyword(local_site, "Dancing Digital")
     if len(res) == 1:
         dd_item = pywikibot.ItemPage(local_repo, res[0]["id"])
     else:

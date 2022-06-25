@@ -13,6 +13,7 @@ sys.path.append(str(project_path))
 sys.path.append(str(project_path / "scripts"))
 
 import scripts.utils.wikidata_utils as wd  # noqa: E402
+import scripts.utils.wiki_queries as wq  # noqa: E402
 
 app = FastAPI()
 
@@ -65,7 +66,7 @@ def read_item(item_id):
 def read_search(keyword=None):
     site = pywikibot.Site("wikidata", "wikidata")
     if keyword:
-        results = wd.item_exists(site, keyword)
+        results = wq.search_keyword(site, keyword)
 
         content = []
         for res in results:

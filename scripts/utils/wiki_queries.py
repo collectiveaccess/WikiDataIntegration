@@ -1,8 +1,58 @@
 import requests
 import json
+from pywikibot.data import api
 
 WIKI_BASE_URL = "https://www.wikidata.org"
 WIKI_QUERY_URL = "https://query.wikidata.org/sparql"
+
+
+def fetch_search_results(site, keyword, language="en"):
+    """search wikidata for a given keyword"""
+    # https://stackoverflow.com/a/45050455
+    params = {
+        "action": "wbsearchentities",
+        "format": "json",
+        "language": language,
+        "type": "item",
+        "search": keyword,
+    }
+    api_request = api.Request(site=site, parameters=params)
+    result = api_request.submit()
+
+    return result["search"]
+
+
+def process_search_results(results, language="en"):
+    """format wbsearchentities results from wikidata"""
+    count = len(results)
+    if count == 0:
+        return []
+    else:
+        tmp = []
+        for result in results:
+            description = result["description"] if "description" in result else None
+            if "label" in result:
+                label = result["label"]
+            elif "aliases" in result:
+                label = result["aliases"][0]
+            else:
+                label = None
+
+            tmp.append(
+                {
+                    "id": result["id"],
+                    "label": label,
+                    "description": description,
+                    "url": result["url"],
+                    "language": language,
+                }
+            )
+        return tmp
+
+
+def search_keyword(site, keyword, language="en"):
+    results = fetch_search_results(site, keyword, language)
+    return process_search_results(results, language)
 
 
 def wikidata_query(query):
@@ -52,11 +102,15 @@ def fetch_all_properties():
     }
     """
 
-    results = wikidata_query(query)
+    return wikidata_query(query)
+
+
+def fetch_and_format_all_properties():
+    results = fetch_all_properties()
     return process_wikidata_properties(results)
 
 
-def fetch_all_external_id_properties():
+def fetch_external_id_properties():
     """
     get all external id properties from wikidata
     """
@@ -69,7 +123,11 @@ def fetch_all_external_id_properties():
     }
     """
 
-    results = wikidata_query(query)
+    return wikidata_query(query)
+
+
+def fetch_and_format_external_id_properties():
+    results = fetch_external_id_properties()
     return process_wikidata_properties(results)
 
 
@@ -91,11 +149,15 @@ def fetch_labels_for_ids_sqarql(ids):
         ["wd:" + id for id in ids]
     )
 
-    results = wikidata_query(query)
+    return wikidata_query(query)
+
+
+def fetch_and_format_labels_for_ids_sqarql(ids):
+    results = fetch_labels_for_ids_sqarql(ids)
     return process_wikidata_items(results)
 
 
-def fetch_labels_for_ids(ids, lang="en"):
+def fetch_and_format_labels_for_ids(ids, lang="en"):
     """
     get labels for a given list of Q ids and property ids from wikidata
 

@@ -27,7 +27,7 @@ def download_all_properties():
         for path in Path(constants_path).glob("wikdata_properties*.json"):
             os.remove(path)
 
-        properties = wq.fetch_all_properties()
+        properties = wq.fetch_and_format_all_properties()
         with open(filepath, "w") as outfile:
             json_object = json.dumps(properties, indent=2)
             outfile.write(json_object)
@@ -46,7 +46,7 @@ def download_all_external_id_properties():
         for path in Path(constants_path).glob("wikdata_external_id_properties*.json"):
             os.remove(path)
 
-        properties = wq.fetch_all_external_id_properties()
+        properties = wq.fetch_and_format_external_id_properties()
         with open(filepath, "w") as outfile:
             json_object = json.dumps(properties, indent=2)
             outfile.write(json_object)
