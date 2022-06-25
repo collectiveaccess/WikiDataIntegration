@@ -540,20 +540,10 @@ def format_display_claim(claim, prop, ids_dict):
 
 def format_ids_labels(item, item_json):
     """create dictionary with property ids / item ids and their labels"""
-    qids = get_ids_for_item(item, item_json, include_pids=False, include_qids=True)
-    pids = get_ids_for_item(item, item_json, include_pids=True, include_qids=False)
+    ids = get_ids_for_item(item, item_json, include_pids=True, include_qids=True)
 
-    # connect to wikidata.org API to get labels for qids
-    ids_dict = wq.fetch_labels_for_ids(qids, lang="en")
-
-    # read file to get labels for pids
-    for path in Path(constants_path).glob("wikdata_properties*.json"):
-        with open(str(path), "r") as file:
-            properties = json.loads(file.read())
-            for pid in pids:
-                ids_dict[pid] = properties[pid]
-
-    return ids_dict
+    # connect to wikidata.org API to get labels
+    return wq.fetch_labels_for_ids_sqarql(ids)
 
 
 def format_display_item_claims(item, item_json):

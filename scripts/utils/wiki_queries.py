@@ -27,6 +27,16 @@ def process_wikidata_properties(results):
     return data
 
 
+def process_wikidata_items(results):
+    data = {}
+    for result in results:
+        qid = result["item"]["value"].split("/")[-1]
+        value = result["itemLabel"]["value"]
+        data[qid] = value
+
+    return data
+
+
 def fetch_all_properties():
     """
     get all properties from wikidata
@@ -62,6 +72,27 @@ def fetch_all_external_id_properties():
     results = wikidata_query(query)
     return process_wikidata_properties(results)
 
+
+def fetch_labels_for_ids_sqarql(ids):
+    """
+    get labels for a given list of Q ids and property ids from wikidata using
+    sparql.
+
+    https://stackoverflow.com/a/66223213
+    """
+
+    query = """
+    SELECT ?item ?itemLabel WHERE {
+        VALUES ?item { %s }
+
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+    """ % " ".join(
+        ["wd:" + id for id in ids]
+    )
+
+    results = wikidata_query(query)
+    return process_wikidata_items(results)
 
 
 def fetch_labels_for_ids(ids, lang="en"):
