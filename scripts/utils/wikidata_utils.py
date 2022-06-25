@@ -379,65 +379,6 @@ def remove_identical_label_description(claim_item_dict):
     claim_item_dict["descriptions"] = new_descriptions
 
 
-def extract_description_from_image_data(claim, text):
-    match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
-    if match:
-        description = match.groups()[0]
-        match = re.search("([a-z]+)\|[0-9]+=(.*?)$", description)
-        if match:
-            value = {"url": claim.target.full_url(), "lang": match[1], "text": match[2]}
-        else:
-            value = {"url": claim.target.full_url(), "text": description}
-    else:
-        match = re.search("\|[dD]escription=(.*?)\s+\|", text)
-        if match:
-            value = {"url": claim.target.full_url(), "text": match[1]}
-        else:
-
-            value = {"url": claim.target.full_url(), "text": claim.target.title()}
-
-    return value
-
-
-def get_claim_value(claim, include_qid=False):
-    """get the text value of a claim"""
-    if claim.type == "wikibase-item":
-        if not claim.getTarget():
-            return
-
-        claim_dict = claim.get()
-        lang = get_claim_language(claim_dict)
-        label = claim_dict["labels"][lang]
-
-        if include_qid:
-            value = claim.target.title() + " " + label
-        else:
-            value = label
-    elif claim.type == "time":
-        value = claim.target.toTimestr()
-    elif claim.type == "globe-coordinate":
-        value = {"latitude": claim.getTarget().lat, "longitude": claim.getTarget().lon}
-    elif claim.type == "quantity":
-        if claim.target.unit == "1":
-            value = claim.target.amount.to_eng_string()
-        else:
-            unit_dict = claim.target.get_unit_item().get()
-            lang = get_claim_language(unit_dict)
-            value = (
-                claim.target.amount.to_eng_string() + " " + unit_dict["labels"][lang]
-            )
-    elif claim.type == "commonsMedia":
-        value = extract_description_from_image_data(claim, claim.target.text)
-    elif claim.type == "monolingualtext":
-        value = claim.target.text
-    elif claim.type == "geo-shape":
-        value = claim.target.toWikibase()
-    else:
-        value = claim.getTarget()
-
-    return value
-
-
 def fetch_all_wikidata_properties():
     """
     get all properties from wikidata
@@ -545,23 +486,124 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
     return list(claim_ids)
 
 
+def extract_value_from_image_data(claim, text):
+    for method in dir(claim.target):
+        if callable(method):
+            print(method())
+
+    match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
+    if match:
+        description = match.groups()[0]
+        match = re.search("([a-z]+)\|[0-9]+=(.*?)$", description)
+        if match:
+            value = {
+                "url": claim.target.full_url(),
+                "lang": match[1],
+                "label": match[2],
+            }
+        else:
+            value = {"url": claim.target.full_url(), "label": description}
+    else:
+        match = re.search("\|[dD]escription=(.*?)\s+\|", text)
+        if match:
+            value = {"url": claim.target.full_url(), "label": match[1]}
+        else:
+
+            value = {"url": claim.target.full_url(), "label": claim.target.title()}
+
+    return value
+
+
+def get_claim_value(claim, include_qid=False):
+    """get the text value of a claim"""
+    if not claim.target:
+        return
+
+    if claim.type == "wikibase-item":
+        claim_dict = claim.get()
+        lang = get_claim_language(claim_dict)
+        label = claim_dict["labels"][lang]
+
+        if include_qid:
+            return claim.target.title() + " " + label
+        else:
+            return label
+
+    elif claim.type == "wikibase-property":
+        claim_dict = claim.get()
+        lang = get_claim_language(claim_dict)
+        label = claim_dict["labels"][lang]
+
+        if include_qid:
+            return claim.target.id + " " + label
+        else:
+            return label
+
+    elif claim.type == "wikibase-lexeme":
+        claim_dict = {"labels": {k: v for k, v in claim.target.lemmas.items()}}
+        lang = get_claim_language(claim_dict)
+        label = claim_dict["labels"][lang]
+
+        return {"label": label, "id": claim.target.id, "url": claim.target.full_url()}
+
+    elif claim.type == "globe-coordinate":
+        return {"latitude": claim.target.lat, "longitude": claim.target.lon}
+
+    elif claim.type == "geo-shape":
+        url = claim.target.page.full_url() if claim.target.page else None
+        return {"label": claim.target.toWikibase(), "url": url}
+
+    elif claim.type == "commonsMedia":
+        return extract_value_from_image_data(claim, claim.target.text)
+
+    elif claim.type == "quantity":
+        data = {
+            "amount": claim.target.amount.to_eng_string(),
+        }
+        if claim.target.lowerBound:
+            data["lowerBound"] = claim.target.lowerBound.to_eng_string()
+        if claim.target.lowerBound:
+            data["upperBound"] = claim.target.upperBound.to_eng_string()
+        if claim.target.unit != "1":
+            unit_dict = claim.target.get_unit_item().get()
+            lang = get_claim_language(unit_dict)
+            data["unit"] = unit_dict["labels"][lang]
+
+        return data
+
+    elif claim.type == "time":
+        return claim.target.toTimestr()
+
+    elif claim.type == "monolingualtext":
+        return claim.target.text
+
+    else:
+        return claim.target
+
+
 def format_display_claim(claim, prop, ids_dict):
     """created a nested dictionary for an claims data"""
-
     data = {
         "property": prop,
         "property_value": ids_dict[prop],
         "data_type": claim.type,
-        "data_value": {},
+        "data_value": {"value": {}},
     }
+
     if claim.type == "wikibase-item":
-        qid = claim.target.title()
-        data["data_value"]["id"] = qid
-        data["data_value"]["value"] = ids_dict[qid]
-        data["data_value"]["url"] = claim.target.full_url()
-    elif claim.type == "geo-shape":
-        data["data_value"]["value"] = get_claim_value(claim)
-        data["data_value"]["url"] = claim.target.page.full_url()
+        id = claim.target.title() if claim.target else None
+        url = claim.target.full_url() if claim.target else None
+        data["data_value"]["value"]["label"] = ids_dict[id] if id else None
+        data["data_value"]["value"]["id"] = id
+        data["data_value"]["value"]["url"] = url
+
+    elif claim.type == "wikibase-property":
+        id = claim.target.id if claim.target else None
+        url = claim.target.full_url() if claim.target else None
+        data["data_value"]["value"]["label"] = ids_dict[id] if id else None
+        data["data_value"]["value"]["id"] = id
+        data["data_value"]["value"]["url"] = url
+
     else:
         data["data_value"]["value"] = get_claim_value(claim)
 
