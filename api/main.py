@@ -12,7 +12,7 @@ project_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_path))
 sys.path.append(str(project_path / "scripts"))
 
-import scripts.utils.wikidata_utils as wd
+import scripts.utils.wikidata_utils as wd  # noqa: E402
 
 app = FastAPI()
 

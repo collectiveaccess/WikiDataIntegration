@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-import re
 from datetime import date
 from os.path import exists
 import json

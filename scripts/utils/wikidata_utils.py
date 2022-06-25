@@ -445,7 +445,16 @@ def fetch_all_wikidata_properties():
     https://stackoverflow.com/questions/25100224/how-to-get-a-list-of-all-wikidata-properties
     """
 
-    link = f"{WIKI_QUERY_URL}/sparql?format=json&query=SELECT%20%3Fproperty%20%3FpropertyLabel%20WHERE%20%7B%0A%20%20%20%20%3Fproperty%20a%20wikibase%3AProperty%20.%0A%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%0A%20%20%20%20%20%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22%20.%0A%20%20%20%7D%0A%20%7D%0A%0A"
+    query = """
+    SELECT ?property ?propertyLabel WHERE {
+        ?property a wikibase:Property .
+        SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "en" .
+        }
+    }
+    """
+
+    link = f"{WIKI_QUERY_URL}/sparql?format=json&query={query}"
     response = requests.get(link)
     results = response.json()["results"]["bindings"]
 
@@ -474,7 +483,10 @@ def fetch_labels_for_ids(ids, lang="en"):
 
     for chunk_ids in chunked_list:
         ids_str = "|".join(chunk_ids)
-        link = f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities&ids={ids_str}&props=labels&languages={lang}&format=json"
+        link = (
+            f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities"
+            f"&ids={ids_str}&props=labels&languages={lang}&format=json"
+        )
         response = requests.get(link)
 
         if response.status_code == 200:
@@ -575,7 +587,8 @@ def format_ids_labels(item, item_json):
 
 
 def format_display_item_claims(item, item_json):
-    """created a nested dictionary for an item claims, references, and qualifiers data"""
+    """created a nested dictionary for an item claims, references, and
+    qualifiers data"""
     ids_dict = format_ids_labels(item, item_json)
 
     data = {}
