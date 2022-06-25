@@ -1,8 +1,9 @@
+// these are queries that work in the wikibase sandbox
 // https://www.mediawiki.org/wiki/Wikibase/API
 
 
 // action=wbsetclaim
-
+// set claim
 
 {
   "id":"Q592$5627445f-43cb-ed6d-3adb-760e85bd17ee",
@@ -11,6 +12,7 @@
 }
 
 // action=wbsetclaim
+// set claim and references
 
 
 {

@@ -1,0 +1,88 @@
+# select all properties
+
+SELECT ?property ?propertyLabel WHERE {
+    ?property a wikibase:Property .
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "en" .
+    }
+}
+
+=====
+
+#Properties grouped by their Wikibase datatype (Q19798645) with number of properties
+#Properties grouped by their type with number of properties
+
+SELECT (COUNT(?property) as ?pcount ) ?wbtype WHERE {
+  ?property rdf:type wikibase:Property.
+  ?property wikibase:propertyType  ?wbtype.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+GROUP BY ?wbtype
+ORDER BY DESC(?pcount)
+
+=====
+
+# select all property and include wikibase datatype
+
+SELECT ?property ?propertyLabel  ?wbtype WHERE {
+    ?property a wikibase:Property .
+  ?property wikibase:propertyType  ?wbtype.
+
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "en" .
+    }
+}
+limit 5
+
+=====
+
+# select all propertythat are ExternalId
+
+
+// 7180
+
+SELECT ?property ?propertyLabel ?value WHERE {
+  ?property wikibase:propertyType wikibase:ExternalId .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+
+
+=====
+
+SPARQL query: how to get the external identifiers links (url) of a specific Wikidata ID?
+
+https://stackoverflow.com/questions/62090841/sparql-query-how-to-get-the-external-identifiers-links-url-of-a-specific-wiki
+
+
+SELECT ?property ?propertyLabel ?value WHERE {
+  ?property wikibase:propertyType wikibase:ExternalId .
+  ?property wikibase:directClaim ?propertyclaim .
+  OPTIONAL {?property wdt:P1630 ?formatterURL .}
+  wd:Q753828 ?propertyclaim ?_value .
+  BIND(IF(BOUND(?formatterURL), IRI(REPLACE(?formatterURL, "\\$", ?_value)) , ?_value) AS ?value)
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+
+=====
+get info about wikimedia common items
+- size
+- links
+- thumbnails
+
+How to search images in Wikimedia Commons by API?
+https://stackoverflow.com/questions/36972156/how-to-search-images-in-wikimedia-commons-by-api
+
+https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&titles=File:Gingerbread_House_Essex_CT.jpg|File:Test.jpg&iiprop=url|size|mime|thumbmime|mediatype|comment&format=json&iiurlwidth=300
+
+=====
+
+TODOS
+
+get properites that are external-id
+get the url format for each property
+create url link for given id and format
+return data in api
+
+make query for wikimedia commons items
+return data in api
+https://commons.wikimedia.org/w/api.php?action=help&modules=query%2Bimageinfo
