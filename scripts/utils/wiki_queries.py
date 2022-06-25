@@ -8,8 +8,9 @@ WIKI_QUERY_URL = "https://query.wikidata.org/sparql"
 def wikidata_query(query):
     # https://stackoverflow.com/a/66223213
     try:
-        response = requests.get(
-            WIKI_QUERY_URL, params={"format": "json", "query": query}
+        headers = {"Content-Type": "application/sparql-query"}
+        response = requests.post(
+            WIKI_QUERY_URL, data=query, headers=headers, params={"format": "json"}
         )
         return response.json()["results"]["bindings"]
     except json.JSONDecodeError as e:
