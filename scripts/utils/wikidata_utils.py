@@ -10,8 +10,8 @@ from utils.logger import logger
 from constants.languages import invalid_languages, allowed_languages
 import utils.wiki_queries as wq
 
-data_path = Path(__file__).resolve().parent.parent.parent / "data"
-sys.path.append(str(data_path))
+constants_path = Path(__file__).resolve().parent.parent / "constants"
+sys.path.append(str(constants_path))
 
 
 def validate_create_data(data, key):
@@ -547,7 +547,7 @@ def format_ids_labels(item, item_json):
     ids_dict = wq.fetch_labels_for_ids(qids, lang="en")
 
     # read file to get labels for pids
-    for path in Path(data_path).glob("wikdata_labels*.json"):
+    for path in Path(constants_path).glob("wikdata_properties*.json"):
         with open(str(path), "r") as file:
             properties = json.loads(file.read())
             for pid in pids:

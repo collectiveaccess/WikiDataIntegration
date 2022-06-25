@@ -25,8 +25,6 @@ def process_wikidata_properties(results):
 
     return data
 
-    return data
-
 
 def fetch_all_properties():
     """
@@ -45,6 +43,24 @@ def fetch_all_properties():
 
     results = wikidata_query(query)
     return process_wikidata_properties(results)
+
+
+def fetch_all_external_id_properties():
+    """
+    get all external id properties from wikidata
+    """
+
+    query = """
+    SELECT ?property ?propertyLabel WHERE {
+        ?property wikibase:propertyType wikibase:ExternalId .
+
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+    """
+
+    results = wikidata_query(query)
+    return process_wikidata_properties(results)
+
 
 
 def fetch_labels_for_ids(ids, lang="en"):

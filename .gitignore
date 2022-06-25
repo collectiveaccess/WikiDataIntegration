@@ -74,4 +74,3 @@ apicache-py3
 pywikibot.lwp
 families/*_family.py
 logs/*.log
-data/wikdata_labels*.json
