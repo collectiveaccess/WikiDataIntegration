@@ -2,7 +2,6 @@ from datetime import date
 import re
 import sys
 from pathlib import Path
-import json
 import pywikibot
 from pywikibot.data import api
 
@@ -390,6 +389,14 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
             if include_qids:
                 if claim.type == "wikibase-item" and claim.target:
                     claim_ids.add(claim.target.title())
+
+                if claim.type == "quantity" and claim.target:
+                    if claim.target.unit != "1":
+                        # target.unit is the url for wikidata item record
+                        unit_url = claim.target.unit
+                        id = unit_url.split("/")[-1]
+                        claim_ids.add(id)
+
             if include_pids:
                 if claim.type == "wikibase-property" and claim.target:
                     claim_ids.add(claim.target.getID())
@@ -403,6 +410,12 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
                             if source.type == "wikibase-item" and source.target:
                                 claim_ids.add(source.target.title())
 
+                            if source.type == "quantity" and source.target:
+                                if source.target.unit != "1":
+                                    unit_url = source.target.unit
+                                    id = unit_url.split("/")[-1]
+                                    claim_ids.add(id)
+
             for prop, qualifiers in claim.qualifiers.items():
                 if include_pids:
                     claim_ids.add(prop)
@@ -411,14 +424,18 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
                         if qualifier.type == "wikibase-item" and qualifier.target:
                             claim_ids.add(qualifier.target.title())
 
+                        if qualifier.type == "quantity" and qualifier.target:
+                            if qualifier.target.unit != "1":
+                                unit_url = qualifier.target.unit
+                                id = unit_url.split("/")[-1]
+                                claim_ids.add(id)
+
     return list(claim_ids)
 
 
-def extract_value_from_image_data(claim, text):
-    for method in dir(claim.target):
-        if callable(method):
-            print(method())
-
+def extract_value_from_image_data(claim):
+    # NOTE: claim.target.text require a new api call
+    text = claim.target.text
     match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
     if match:
         description = match.groups()[0]
@@ -442,28 +459,26 @@ def extract_value_from_image_data(claim, text):
     return value
 
 
-def get_claim_value(claim, include_qid=False):
+def get_claim_value(claim, ids_dict, include_qid=False):
     """get the text value of a claim"""
     if not claim.target:
         return
 
     if claim.type == "wikibase-item":
-        claim_dict = claim.get()
-        lang = get_claim_language(claim_dict)
-        label = claim_dict["labels"][lang]
+        id = claim.target.title()
+        label = ids_dict[id]
 
         if include_qid:
-            return claim.target.title() + " " + label
+            return id + " " + label
         else:
             return label
 
     elif claim.type == "wikibase-property":
-        claim_dict = claim.get()
-        lang = get_claim_language(claim_dict)
-        label = claim_dict["labels"][lang]
+        id = claim.target.id
+        label = ids_dict[id]
 
         if include_qid:
-            return claim.target.id + " " + label
+            return id + " " + label
         else:
             return label
 
@@ -482,7 +497,7 @@ def get_claim_value(claim, include_qid=False):
         return {"label": claim.target.toWikibase(), "url": url}
 
     elif claim.type == "commonsMedia":
-        return extract_value_from_image_data(claim, claim.target.text)
+        return claim.target.title()
 
     elif claim.type == "quantity":
         data = {
@@ -493,9 +508,11 @@ def get_claim_value(claim, include_qid=False):
         if claim.target.lowerBound:
             data["upperBound"] = claim.target.upperBound.to_eng_string()
         if claim.target.unit != "1":
-            unit_dict = claim.target.get_unit_item().get()
-            lang = get_claim_language(unit_dict)
-            data["unit"] = unit_dict["labels"][lang]
+            # NOTE: claim.target.get_unit_item().labels makes an API request;
+            # target.unit does not make API request
+            unit_url = claim.target.unit
+            id = unit_url.split("/")[-1]
+            data["unit"] = ids_dict[id]
 
         return data
 
@@ -533,7 +550,7 @@ def format_display_claim(claim, prop, ids_dict):
         data["data_value"]["value"]["url"] = url
 
     else:
-        data["data_value"]["value"] = get_claim_value(claim)
+        data["data_value"]["value"] = get_claim_value(claim, ids_dict)
 
     return data
 
