@@ -194,3 +194,80 @@ def fetch_and_format_labels_for_ids(ids, lang="en"):
             raise ValueError("Could not get labels for ids from wikidata API.")
 
     return data
+
+
+def fetch_commons_media_metadata(site, files):
+    """search wikimedia for commons media files and return the metadata"""
+    params = {
+        "action": "query",
+        "prop": "imageinfo",
+        "format": "json",
+        "iiprop": "url|size|mime|thumbmime|mediatype",
+        "iiurlwidth": 300,
+        "titles": "|".join(files),
+    }
+    api_request = api.Request(site=site, parameters=params)
+    results = api_request.submit()
+
+    return list(results["query"]["pages"].values())
+
+
+def format_commons_metadata_for_file(fields, file_data):
+    tmp = {"title": file_data["title"]}
+    for field in fields:
+        if field in file_data["imageinfo"][0]:
+            tmp[field] = file_data["imageinfo"][0][field]
+    return tmp
+
+
+def format_commons_media_metadata(files_data):
+    image_fields = [
+        "mediatype",
+        "size",
+        "url",
+        "descriptionurl",
+        "width",
+        "height",
+        "mime",
+        "thumburl",
+        "thumbwidth",
+        "thumbheight",
+        "thumbmime",
+    ]
+    audio_fields = [
+        "mediatype",
+        "size",
+        "url",
+        "descriptionurl",
+        "duration",
+        "mime",
+    ]
+    video_fields = image_fields + ["duration"]
+    office_fields = image_fields + ["pagecount"]
+
+    data = {}
+    for file_data in files_data:
+        if "imageinfo" not in file_data:
+            continue
+
+        if file_data["imageinfo"][0]["mediatype"] in ["BITMAP", "DRAWING", "3D"]:
+            tmp = format_commons_metadata_for_file(image_fields, file_data)
+        elif file_data["imageinfo"][0]["mediatype"] == "AUDIO":
+            tmp = format_commons_metadata_for_file(audio_fields, file_data)
+        elif file_data["imageinfo"][0]["mediatype"] == "VIDEO":
+            tmp = format_commons_metadata_for_file(video_fields, file_data)
+
+        elif file_data["imageinfo"][0]["mediatype"] == "OFFICE":
+            tmp = format_commons_metadata_for_file(office_fields, file_data)
+
+        data[file_data["title"]] = tmp
+
+    return data
+
+
+def fetch_and_format_commons_media_metadata(site, files):
+    """pywikibot ItemPage only includes the file name for commons media. we
+    need to  do a separate api call to get other metadata for the media.
+    """
+    results = fetch_commons_media_metadata(site, files)
+    return format_commons_media_metadata(results)
