@@ -51,7 +51,7 @@ def read_item(item_id):
     item = pywikibot.ItemPage(repo, item_id)
 
     if item.exists():
-        content = wd.format_display_item(item)
+        content = wd.format_display_item(item, site)
         try:
             json.dumps(content)
         except TypeError as err:

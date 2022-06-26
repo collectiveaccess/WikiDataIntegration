@@ -380,8 +380,31 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
     return list(claim_ids)
 
 
+def get_commons_media_for_item(item):
+    """iterate through an item to get all commons media"""
+    media = set()
+
+    for prop, claims in item.claims.items():
+        for claim in claims:
+            if claim.type == "commonsMedia":
+                media.add(claim.target.title())
+
+            for source_dict in claim.sources:
+                for prop, sources in source_dict.items():
+                    for source in sources:
+                        if source.type == "commonsMedia":
+                            media.add(source.target.title())
+
+            for prop, qualifiers in claim.qualifiers.items():
+                for qualifier in qualifiers:
+                    if qualifier.type == "commonsMedia":
+                        media.add(qualifier.target.title())
+    return list(media)
+
+
 def format_commons_media_value(claim):
-    """for a commonsMedia claim, format the data value"""
+    """for a commonsMedia claim, format the data value. Use regex to grab the
+    description out of a block of text"""
     # NOTE: claim.target.text require a new api call
     text = claim.target.text
     match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
@@ -474,31 +497,36 @@ def get_claim_value(claim, ids_dict, include_qid=False):
         return claim.target
 
 
-def format_claim_data(claim, prop, ids_dict):
+def format_claim_data(claim, prop, id_label_dict, media_metadata):
     """created a nested dictionary for a claim"""
     data = {
         "property": prop,
-        "property_value": ids_dict[prop],
+        "property_value": id_label_dict[prop],
         "data_type": claim.type,
         "data_value": {"value": {}},
     }
 
     if claim.type == "wikibase-item":
-        id = claim.target.title() if claim.target else None
-        url = claim.target.full_url() if claim.target else None
-        data["data_value"]["value"]["label"] = ids_dict[id] if id else None
-        data["data_value"]["value"]["id"] = id
-        data["data_value"]["value"]["url"] = url
+        if claim.target:
+            id = claim.target.title()
+            data["data_value"]["value"]["label"] = id_label_dict[id]
+            data["data_value"]["value"]["id"] = id
+            data["data_value"]["value"]["url"] = claim.target.full_url()
 
     elif claim.type == "wikibase-property":
-        id = claim.target.id if claim.target else None
-        url = claim.target.full_url() if claim.target else None
-        data["data_value"]["value"]["label"] = ids_dict[id] if id else None
-        data["data_value"]["value"]["id"] = id
-        data["data_value"]["value"]["url"] = url
+        if claim.target:
+            id = claim.target.id
+            data["data_value"]["value"]["label"] = id_label_dict[id]
+            data["data_value"]["value"]["id"] = id
+            data["data_value"]["value"]["url"] = claim.target.full_url()
+
+    elif claim.type == "commonsMedia":
+        if claim.target:
+            file_name = claim.target.title()
+            data["data_value"]["value"] = media_metadata[file_name]
 
     else:
-        data["data_value"]["value"] = get_claim_value(claim, ids_dict)
+        data["data_value"]["value"] = get_claim_value(claim, id_label_dict)
 
     return data
 
@@ -511,10 +539,10 @@ def create_id_label_dictionary(item, item_json):
     return wq.fetch_and_format_labels_for_ids_sqarql(ids)
 
 
-def format_display_item_claims(item, item_json):
+def format_display_item_claims(item, item_json, media_metadata):
     """created a nested dictionary for an item claims, references, and
     qualifiers data"""
-    ids_dict = create_id_label_dictionary(item, item_json)
+    id_label_dict = create_id_label_dictionary(item, item_json)
 
     data = {}
     for prop, claims in item.claims.items():
@@ -522,7 +550,7 @@ def format_display_item_claims(item, item_json):
 
         for claim in claims:
             claim_data = {
-                **format_claim_data(claim, prop, ids_dict),
+                **format_claim_data(claim, prop, id_label_dict, media_metadata),
                 "id": claim.snak,
             }
 
@@ -535,7 +563,9 @@ def format_display_item_claims(item, item_json):
             for prop_q, qualifiers in claim.qualifiers.items():
                 claim_data["qualifiers"][prop_q] = []
                 for qualifier in qualifiers:
-                    qualifier_data = format_claim_data(qualifier, prop_q, ids_dict)
+                    qualifier_data = format_claim_data(
+                        qualifier, prop_q, id_label_dict, media_metadata
+                    )
                     claim_data["qualifiers"][prop_q].append(qualifier_data)
 
             for source_dict in claim.sources:
@@ -543,7 +573,9 @@ def format_display_item_claims(item, item_json):
                 for prop_s, sources in source_dict.items():
                     source_dict_data[prop_s] = []
                     for source in sources:
-                        source_data = format_claim_data(source, prop_s, ids_dict)
+                        source_data = format_claim_data(
+                            source, prop_s, id_label_dict, media_metadata
+                        )
                         source_dict_data[prop_s].append(source_data)
 
                 claim_data["references"].append(source_dict_data)
@@ -568,7 +600,7 @@ def format_item_aliases(item_json):
     return data
 
 
-def format_display_item(item):
+def format_display_item(item, site):
     """takes the json from a item and reshapes it to fit the needs of the
     of our /items/{id} API endpoint
     """
@@ -582,6 +614,10 @@ def format_display_item(item):
             else:
                 data[field] = format_item_field(item_json, field)
 
-    data["claims"] = format_display_item_claims(item, item_json)
+    # get metadata for every  commons media that is associated with this item
+    media_files = get_commons_media_for_item(item)
+    media_metadata = wq.fetch_and_format_commons_media_metadata(site, media_files)
+
+    data["claims"] = format_display_item_claims(item, item_json, media_metadata)
 
     return data
