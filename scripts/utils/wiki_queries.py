@@ -12,7 +12,9 @@ def fetch_search_results(site, keyword, language="en"):
     params = {
         "action": "wbsearchentities",
         "format": "json",
+        "errorformat": "plaintext",
         "language": language,
+        "uselang": language,
         "type": "item",
         "search": keyword,
     }
