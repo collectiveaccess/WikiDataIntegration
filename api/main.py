@@ -70,13 +70,16 @@ def read_search(keyword=None):
 
         content = []
         for res in results:
+            data = {
+                "id": res["id"],
+                "label": res["label"],
+            }
+            label = res["label"]
             if res["description"]:
-                content.append(
-                    {"id": res["id"], "label": f"{res['label']} ({res['description']})"}
-                )
-            else:
-                content.append({"id": res["id"], "label": f"{res['label']}"})
+                label += f" ({res['description']})"
+            data["search_label"] = label
 
+            content.append(data)
     else:
         content = []
 
