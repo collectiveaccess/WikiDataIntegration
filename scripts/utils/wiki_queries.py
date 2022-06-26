@@ -208,8 +208,10 @@ def fetch_commons_media_metadata(site, files):
     }
     api_request = api.Request(site=site, parameters=params)
     results = api_request.submit()
-
-    return list(results["query"]["pages"].values())
+    if "pages" in results["query"]:
+        return list(results["query"]["pages"].values())
+    else:
+        return []
 
 
 def format_commons_metadata_for_file(fields, file_data):
