@@ -428,8 +428,8 @@ def format_commons_media_value(claim):
     return value
 
 
-def get_claim_value(claim, ids_dict, include_qid=False):
-    """get the value of a claim"""
+def get_claim_label(claim, ids_dict, include_qid=False):
+    """get the label info that shown on the site for a claim"""
     if not claim.target:
         return
 
@@ -527,11 +527,11 @@ def format_claim_data(claim, prop, id_label_dict, media_metadata, external_id_li
 
     elif claim.type == "external-id":
         url = external_id_links[prop] if prop in external_id_links else None
-        data["data_value"]["value"]["label"] = get_claim_value(claim, id_label_dict)
+        data["data_value"]["value"]["label"] = get_claim_label(claim, id_label_dict)
         data["data_value"]["value"]["url"] = url
 
     else:
-        data["data_value"]["value"] = get_claim_value(claim, id_label_dict)
+        data["data_value"]["value"] = get_claim_label(claim, id_label_dict)
 
     return data
 

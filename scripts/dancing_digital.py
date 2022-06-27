@@ -177,18 +177,18 @@ def update_wikidata_claims(filename, import_sitelinks):
                 if claim.type == "commonsMedia":
                     continue
 
-                console("claim", claim.id, wd.get_claim_value(claim))
+                console("claim", claim.id, wd.get_claim_label(claim))
 
                 # get the corresponding local claim
                 if claim.id in local_item.claims:
                     for l_claim in local_item.claims[claim.id]:
 
-                        if wd.get_claim_value(l_claim, False) == wd.get_claim_value(
+                        if wd.get_claim_label(l_claim, False) == wd.get_claim_label(
                             claim, False
                         ):
                             local_claim = l_claim
                             console(
-                                "local_claim", l_claim.id, wd.get_claim_value(l_claim)
+                                "local_claim", l_claim.id, wd.get_claim_label(l_claim)
                             )
 
                 add_source_to_wikidata_claim(row, claim, local_claim, import_sitelinks)
@@ -217,7 +217,7 @@ def add_qualifier_to_wikidata_claim(row, claim, local_claim, import_sitelinks):
             console(
                 "      qualifier_value: ",
                 qualifier_value,
-                wd.get_claim_value(qualifier_claim),
+                wd.get_claim_label(qualifier_claim),
             )
 
             # check is source exists locally
@@ -277,7 +277,7 @@ def add_source_to_wikidata_claim(row, claim, local_claim, import_sitelinks):
                 console(
                     "      source_value: ",
                     source_value,
-                    wd.get_claim_value(source_claim),
+                    wd.get_claim_label(source_claim),
                 )
 
                 # check is source exists locally
