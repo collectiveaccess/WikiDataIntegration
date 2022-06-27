@@ -275,3 +275,42 @@ def fetch_and_format_commons_media_metadata(site, files):
     """
     results = fetch_commons_media_metadata(site, files)
     return format_commons_media_metadata(results)
+
+
+def fetch_external_id_links(qid):
+    """get all the urls for external ids for a given qid
+
+    https://stackoverflow.com/q/62090841
+    """
+
+    query = (
+        """
+    SELECT ?property ?propertyLabel ?value WHERE {
+      ?property wikibase:propertyType wikibase:ExternalId .
+      ?property wikibase:directClaim ?propertyclaim .
+      ?property wdt:P1630 ?formatterURL .
+      %s ?propertyclaim ?_value .
+      BIND(IRI(REPLACE(?formatterURL, "\\\$1", ?_value)) AS ?value)
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+    """
+        % f"wd:{qid}"
+    )
+
+    return wikidata_query(query)
+
+
+def process_external_id_links(results):
+    data = {}
+    for result in results:
+        pid = result["property"]["value"].split("/")[-1]
+
+        if result["value"]["type"] == "uri":
+            value = result["value"]["value"]
+            data[pid] = value
+    return data
+
+
+def fetch_and_format_external_id_links(qid):
+    results = fetch_external_id_links(qid)
+    return process_external_id_links(results)
