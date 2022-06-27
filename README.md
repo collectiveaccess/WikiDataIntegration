@@ -46,6 +46,7 @@ Copy `user-password.sample.py` and rename it `user-password.py`. Replace 'my_use
 Start api
 
 ```
+cd api
 uvicorn main:app --reload
 ```
 
