@@ -85,3 +85,35 @@ def read_search(keyword: str):
         content = []
 
     return JSONResponse(content=content, headers=headers)
+
+
+class WikidataItem(BaseModel):
+    item_id: str
+    item_label: str
+    item_data: dict
+
+
+def save_item(data):
+    # TODO: update save functionality
+    filepath = project_path / "data" / "wiki_imports.json"
+
+    with open(filepath, "r") as f:
+        records = json.load(f)
+
+    records[data.item_id] = {
+        "id": data.item_id,
+        "label": data.item_label,
+        "data": data.item_data,
+    }
+
+    with open(filepath, "w") as f:
+        json_object = json.dumps(records, indent=2)
+        f.write(json_object)
+
+
+@app.post("/import_wikidata")
+def import_wikidata(data: WikidataItem):
+    save_item(data)
+
+    content = {"message": f"record imported: {data.item_id} {data.item_label}"}
+    return content
