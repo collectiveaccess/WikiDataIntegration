@@ -1,12 +1,12 @@
 from datetime import date
-import re
 import sys
 from pathlib import Path
 import pywikibot
 
 from utils.logger import logger
-from constants.languages import invalid_languages, allowed_languages
+from constants.languages import invalid_languages
 import utils.wiki_queries as wq
+import utils.wiki_serialization as ws
 
 constants_path = Path(__file__).resolve().parent.parent / "constants"
 sys.path.append(str(constants_path))
@@ -206,7 +206,7 @@ def remove_reference(item, statement_property, reference_property):
 
 def import_item(site, item_dict, import_sitelinks=True):
     """import an item record from wikidata."""
-    remove_identical_label_description(item_dict)
+    ws.remove_identical_label_description(item_dict)
     data = {}
     for key, values in item_dict.items():
         if key in ["labels", "descriptions", "aliases"]:
@@ -304,30 +304,6 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
         return claim_value
 
 
-def remove_identical_label_description(claim_item_dict):
-    """remove description if it has same value as label. Wikibase does not allow
-    a label and description to be equal"""
-    if "labels" not in claim_item_dict:
-        return
-    if "descriptions" not in claim_item_dict:
-        return
-
-    new_descriptions = {}
-    for lang, v in claim_item_dict["labels"].items():
-        if lang not in claim_item_dict["descriptions"]:
-            continue
-
-        if claim_item_dict["labels"][lang] != claim_item_dict["descriptions"][lang]:
-            new_descriptions[lang] = claim_item_dict["descriptions"][lang]
-        else:
-            logger.warning(
-                f"'{claim_item_dict['descriptions'][lang]}': "
-                f"{lang} description removed because it is the same as label"
-            )
-
-    claim_item_dict["descriptions"] = new_descriptions
-
-
 def add_nested_ids(claim_type, claim_ids):
     """get q ids for certain claim types"""
     if claim_type.type == "wikibase-item" and claim_type.target:
@@ -400,227 +376,12 @@ def get_commons_media_for_item(item):
     return list(media)
 
 
-def format_commons_media_value(claim):
-    """for a commonsMedia claim, format the data value. Use regex to grab the
-    description out of a block of text"""
-    # NOTE: claim.target.text require a new api call
-    text = claim.target.text
-    match = re.search("\|[dD]escription={{(.*?)}}\s+\|", text)
-    if match:
-        description = match.groups()[0]
-        match = re.search("([a-z]+)\|[0-9]+=(.*?)$", description)
-        if match:
-            value = {
-                "url": claim.target.full_url(),
-                "lang": match[1],
-                "label": match[2],
-            }
-        else:
-            value = {"url": claim.target.full_url(), "label": description}
-    else:
-        match = re.search("\|[dD]escription=(.*?)\s+\|", text)
-        if match:
-            value = {"url": claim.target.full_url(), "label": match[1]}
-        else:
-
-            value = {"url": claim.target.full_url(), "label": claim.target.title()}
-
-    return value
-
-
-def get_claim_label(claim, ids_dict, include_qid=False):
-    """get the label info that shown on the site for a claim"""
-    if not claim.target:
-        return
-
-    if claim.type == "wikibase-item":
-        id = claim.target.title()
-        label = ids_dict[id]
-
-        if include_qid:
-            return id + " " + label
-        else:
-            return label
-
-    elif claim.type == "wikibase-property":
-        id = claim.target.id
-        label = ids_dict[id]
-
-        if include_qid:
-            return id + " " + label
-        else:
-            return label
-
-    elif claim.type == "wikibase-lexeme":
-        claim_dict = {"labels": {k: v for k, v in claim.target.lemmas.items()}}
-        lang = get_claim_language(claim_dict)
-        label = claim_dict["labels"][lang]
-
-        return {"label": label, "id": claim.target.id, "url": claim.target.full_url()}
-
-    elif claim.type == "globe-coordinate":
-        return {"latitude": claim.target.lat, "longitude": claim.target.lon}
-
-    elif claim.type == "geo-shape":
-        url = claim.target.page.full_url() if claim.target.page else None
-        return {"label": claim.target.toWikibase(), "url": url}
-
-    elif claim.type == "commonsMedia":
-        return claim.target.title()
-
-    elif claim.type == "quantity":
-        data = {
-            "amount": claim.target.amount.to_eng_string(),
-        }
-        if claim.target.lowerBound:
-            data["lowerBound"] = claim.target.lowerBound.to_eng_string()
-        if claim.target.lowerBound:
-            data["upperBound"] = claim.target.upperBound.to_eng_string()
-        if claim.target.unit != "1":
-            # NOTE: claim.target.get_unit_item().labels makes an API request;
-            # target.unit does not make API request
-            unit_url = claim.target.unit
-            id = unit_url.split("/")[-1]
-            data["unit"] = ids_dict[id]
-
-        return data
-
-    elif claim.type == "time":
-        return claim.target.toTimestr()
-
-    elif claim.type == "monolingualtext":
-        return claim.target.text
-
-    else:
-        return claim.target
-
-
-def format_claim_data(claim, prop, id_label_dict, media_metadata, external_id_links):
-    """created a nested dictionary for a claim"""
-    # common attributes for each claim
-    data = {
-        "property": prop,
-        "property_value": id_label_dict[prop],
-        "data_type": claim.type,
-        "data_value": {"value": {}},
-    }
-
-    # set ['data_value']['value'] based on claim type
-    if claim.type == "wikibase-item":
-        if claim.target:
-            id = claim.target.title()
-            data["data_value"]["value"]["label"] = id_label_dict[id]
-            data["data_value"]["value"]["id"] = id
-            data["data_value"]["value"]["url"] = claim.target.full_url()
-
-    elif claim.type == "wikibase-property":
-        if claim.target:
-            id = claim.target.id
-            data["data_value"]["value"]["label"] = id_label_dict[id]
-            data["data_value"]["value"]["id"] = id
-            data["data_value"]["value"]["url"] = claim.target.full_url()
-
-    elif claim.type == "commonsMedia":
-        if claim.target:
-            file_name = claim.target.title()
-            data["data_value"]["value"] = media_metadata[file_name]
-
-    elif claim.type == "external-id":
-        url = external_id_links[prop] if prop in external_id_links else None
-        data["data_value"]["value"]["label"] = get_claim_label(claim, id_label_dict)
-        data["data_value"]["value"]["url"] = url
-
-    else:
-        data["data_value"]["value"] = get_claim_label(claim, id_label_dict)
-
-    return data
-
-
 def create_id_label_dictionary(item, item_json):
     """create dictionary with ids (item Q id and property P id) and their labels"""
     ids = get_ids_for_item(item, item_json, include_pids=True, include_qids=True)
 
     # connect to wikidata.org API to get labels for a list of ids
     return wq.fetch_and_format_labels_for_ids_sqarql(ids)
-
-
-def format_item_claims(item, item_json, media_metadata, external_id_links):
-    """created a nested dictionary for an item's claims, references, and
-    qualifiers"""
-    id_label_dict = create_id_label_dictionary(item, item_json)
-
-    statements = {}
-    identifiers = {}
-    for prop, claims in item.claims.items():
-        # separate claims into identifiers and statements
-        if claims[0].type == "external-id":
-            identifiers[prop] = []
-        else:
-            statements[prop] = []
-
-        for claim in claims:
-            claim_data = {
-                **format_claim_data(
-                    claim, prop, id_label_dict, media_metadata, external_id_links
-                ),
-                "id": claim.snak,
-            }
-
-            # process qualifiers for a claim
-            if claim.qualifiers:
-                claim_data["qualifiers"] = {}
-            for prop_q, qualifiers in claim.qualifiers.items():
-                claim_data["qualifiers"][prop_q] = []
-                for qualifier in qualifiers:
-                    qualifier_data = format_claim_data(
-                        qualifier,
-                        prop_q,
-                        id_label_dict,
-                        media_metadata,
-                        external_id_links,
-                    )
-                    claim_data["qualifiers"][prop_q].append(qualifier_data)
-
-            # process references for a claim
-            if claim.sources:
-                claim_data["references"] = []
-            for source_dict in claim.sources:
-                source_dict_data = {}
-                for prop_s, sources in source_dict.items():
-                    source_dict_data[prop_s] = []
-                    for source in sources:
-                        source_data = format_claim_data(
-                            source,
-                            prop_s,
-                            id_label_dict,
-                            media_metadata,
-                            external_id_links,
-                        )
-                        source_dict_data[prop_s].append(source_data)
-
-                claim_data["references"].append(source_dict_data)
-
-            if claims[0].type == "external-id":
-                identifiers[prop].append(claim_data)
-            else:
-                statements[prop].append(claim_data)
-
-    return {"statements": statements, "identifiers": identifiers}
-
-
-def format_item_field(item_json, type):
-    return {lang: values["value"] for lang, values in item_json[type].items()}
-
-
-def format_item_aliases(item_json):
-    data = {}
-    for lang, values in item_json["aliases"].items():
-        data[lang] = []
-        for value in values:
-
-            data[lang].append(value["value"])
-
-    return data
 
 
 def format_display_item(item, site):
@@ -630,22 +391,30 @@ def format_display_item(item, site):
     data = {}
     item_json = item.toJSON()
 
-    # create {language: value} dictionary
+    # reshape json to create {language: value} dictionary
     for field in ["labels", "descriptions", "aliases"]:
         if field in item_json:
             if field == "aliases":
-                data[field] = format_item_aliases(item_json)
+                data[field] = ws.format_item_aliases(item_json)
             else:
-                data[field] = format_item_field(item_json, field)
+                data[field] = ws.format_item_field(item_json, field)
+
+    # create {item_id: label, property_id: label} dictionary so we can
+    # include labels in api response
+    id_label_dict = create_id_label_dictionary(item, item_json)
 
     # get metadata for every commons media that is associated with this item
+    # so we can add media metadata to api response
     media_files = get_commons_media_for_item(item)
-    media_metadata = wq.fetch_and_format_commons_media_metadata(site, media_files)
+    media_metadata = wq.fetch_and_format_commons_media_metadata_results(
+        site, media_files
+    )
 
-    # get links for external ids in this item
+    # get links for external ids in this item so we can add links for
+    # external id to api response
     external_id_links = wq.fetch_and_format_external_id_links(item.id)
 
-    tmp = format_item_claims(item, item_json, media_metadata, external_id_links)
+    tmp = ws.format_item_claims(item, id_label_dict, media_metadata, external_id_links)
     data["statements"] = tmp["statements"]
     data["identifiers"] = tmp["identifiers"]
 
