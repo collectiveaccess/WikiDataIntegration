@@ -41,8 +41,8 @@ def read_root():
     return JSONResponse(content=content, headers=headers)
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: str):
+@app.get("/fetch_wikidata_item/{item_id}")
+def read_wikidata_item(item_id: str):
     # check for invalid item_id
     if not re.search(r"^Q[0-9]+$", item_id):
         raise HTTPException(status_code=404, detail="Item not found")
@@ -127,6 +127,21 @@ def import_wikidata(data: WikidataItem):
     save_item(data)
 
     content = {"message": f"record imported: {data.item_id} {data.item_label}"}
+    return JSONResponse(content=content, headers=headers)
+
+
+@app.get("/items/{id}")
+def read_one_item(id: str):
+    filepath = project_path / "data" / "wiki_imports.json"
+
+    with open(filepath, "r") as f:
+        records = read_data_json(f, {})
+
+        if id in records:
+            content = records[id]
+        else:
+            raise HTTPException(status_code=404, detail="Item not found")
+
     return JSONResponse(content=content, headers=headers)
 
 
