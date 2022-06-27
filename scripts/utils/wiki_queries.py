@@ -24,7 +24,7 @@ def fetch_search_results(site, keyword, language="en"):
     return result["search"]
 
 
-def process_search_results(results, language="en"):
+def format_search_results(results, language="en"):
     """format wbsearchentities results from wikidata"""
     count = len(results)
     if count == 0:
@@ -54,7 +54,7 @@ def process_search_results(results, language="en"):
 
 def search_keyword(site, keyword, language="en"):
     results = fetch_search_results(site, keyword, language)
-    return process_search_results(results, language)
+    return format_search_results(results, language)
 
 
 def wikidata_query(query):
@@ -69,7 +69,7 @@ def wikidata_query(query):
         raise Exception("Invalid query", e)
 
 
-def process_wikidata_properties(results):
+def format_wikidata_properties_results(results):
     data = {}
     for result in results:
         pid = result["property"]["value"].split("/")[-1]
@@ -79,7 +79,7 @@ def process_wikidata_properties(results):
     return data
 
 
-def process_wikidata_items(results):
+def format_wikidata_items_results(results):
     data = {}
     for result in results:
         qid = result["item"]["value"].split("/")[-1]
@@ -109,7 +109,7 @@ def fetch_all_properties():
 
 def fetch_and_format_all_properties():
     results = fetch_all_properties()
-    return process_wikidata_properties(results)
+    return format_wikidata_properties_results(results)
 
 
 def fetch_external_id_properties():
@@ -130,7 +130,7 @@ def fetch_external_id_properties():
 
 def fetch_and_format_external_id_properties():
     results = fetch_external_id_properties()
-    return process_wikidata_properties(results)
+    return format_wikidata_properties_results(results)
 
 
 def fetch_labels_for_ids_sqarql(ids):
@@ -156,7 +156,7 @@ def fetch_labels_for_ids_sqarql(ids):
 
 def fetch_and_format_labels_for_ids_sqarql(ids):
     results = fetch_labels_for_ids_sqarql(ids)
-    return process_wikidata_items(results)
+    return format_wikidata_items_results(results)
 
 
 def fetch_and_format_labels_for_ids(ids, lang="en"):
@@ -224,7 +224,7 @@ def format_commons_metadata_for_file(fields, file_data):
     return tmp
 
 
-def format_commons_media_metadata(files_data):
+def format_commons_media_metadata_results(files_data):
     image_fields = [
         "mediatype",
         "size",
@@ -269,12 +269,12 @@ def format_commons_media_metadata(files_data):
     return data
 
 
-def fetch_and_format_commons_media_metadata(site, files):
+def fetch_and_format_commons_media_metadata_results(site, files):
     """pywikibot ItemPage only includes the file name for commons media. we
     need to  do a separate api call to get other metadata for the media.
     """
     results = fetch_commons_media_metadata(site, files)
-    return format_commons_media_metadata(results)
+    return format_commons_media_metadata_results(results)
 
 
 def fetch_external_id_links(qid):
@@ -300,7 +300,7 @@ def fetch_external_id_links(qid):
     return wikidata_query(query)
 
 
-def process_external_id_links(results):
+def format_external_id_links_results(results):
     data = {}
     for result in results:
         pid = result["property"]["value"].split("/")[-1]
@@ -313,4 +313,4 @@ def process_external_id_links(results):
 
 def fetch_and_format_external_id_links(qid):
     results = fetch_external_id_links(qid)
-    return process_external_id_links(results)
+    return format_external_id_links_results(results)
