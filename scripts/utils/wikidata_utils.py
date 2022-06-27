@@ -544,9 +544,13 @@ def format_display_item_claims(item, item_json, media_metadata):
     qualifiers data"""
     id_label_dict = create_id_label_dictionary(item, item_json)
 
-    data = {}
+    statements = {}
+    identifiers = {}
     for prop, claims in item.claims.items():
-        data[prop] = []
+        if claims[0].type == "external-id":
+            identifiers[prop] = []
+        else:
+            statements[prop] = []
 
         for claim in claims:
             claim_data = {
@@ -580,9 +584,12 @@ def format_display_item_claims(item, item_json, media_metadata):
 
                 claim_data["references"].append(source_dict_data)
 
-            data[prop].append(claim_data)
+            if claims[0].type == "external-id":
+                identifiers[prop].append(claim_data)
+            else:
+                statements[prop].append(claim_data)
 
-    return data
+    return {"statements": statements, "identifiers": identifiers}
 
 
 def format_item_field(item_json, type):
@@ -618,6 +625,8 @@ def format_display_item(item, site):
     media_files = get_commons_media_for_item(item)
     media_metadata = wq.fetch_and_format_commons_media_metadata(site, media_files)
 
-    data["claims"] = format_display_item_claims(item, item_json, media_metadata)
+    tmp = format_display_item_claims(item, item_json, media_metadata)
+    data["statements"] = tmp["statements"]
+    data["identifiers"] = tmp["identifiers"]
 
     return data
