@@ -160,3 +160,15 @@ def read_all_items():
             content = []
 
     return JSONResponse(content=content, headers=headers)
+
+
+@app.delete("/items")
+def delete_all_items():
+    filepath = project_path / "data" / "wiki_imports.json"
+
+    with open(filepath, "w") as f:
+        f.write("")
+
+    content = {"message": "records deleted"}
+
+    return JSONResponse(content=content, headers=headers)
