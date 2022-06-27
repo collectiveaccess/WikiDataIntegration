@@ -7,6 +7,7 @@ import pywikibot
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 project_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_path))
@@ -36,12 +37,12 @@ headers = {"Content-Type": "application/json;charset=UTF-8", "Charset": "utf-8"}
 
 @app.get("/")
 def read_root():
-    content = {"Hello": "World", "message": "塔当"}
+    content = {"message_1": "Hello", "message_2": "你好"}
     return JSONResponse(content=content, headers=headers)
 
 
 @app.get("/items/{item_id}")
-def read_item(item_id):
+def read_item(item_id: str):
     # check for invalid item_id
     if not re.search(r"^Q[0-9]+$", item_id):
         raise HTTPException(status_code=404, detail="Item not found")
@@ -63,7 +64,7 @@ def read_item(item_id):
 
 
 @app.get("/search")
-def read_search(keyword=None):
+def read_search(keyword: str):
     site = pywikibot.Site("wikidata", "wikidata")
     if keyword:
         results = wq.search_keyword(site, keyword)
