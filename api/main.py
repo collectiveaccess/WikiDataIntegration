@@ -93,12 +93,23 @@ class WikidataItem(BaseModel):
     item_data: dict
 
 
+
+def read_data_json(f, emptyFileResponse):
+    try:
+        return json.load(f)
+    except json.decoder.JSONDecodeError as err:
+        # file has no content
+        if err.msg == "Expecting value":
+            return emptyFileResponse
+        else:
+            raise HTTPException(status_code=500, detail=err.msg)
+
 def save_item(data):
     # TODO: update save functionality
     filepath = project_path / "data" / "wiki_imports.json"
 
     with open(filepath, "r") as f:
-        records = json.load(f)
+        records = read_data_json(f, {})
 
     records[data.item_id] = {
         "id": data.item_id,
@@ -116,4 +127,4 @@ def import_wikidata(data: WikidataItem):
     save_item(data)
 
     content = {"message": f"record imported: {data.item_id} {data.item_label}"}
-    return content
+    return JSONResponse(content=content, headers=headers)
