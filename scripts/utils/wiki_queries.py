@@ -314,3 +314,36 @@ def format_external_id_links_results(results):
 def fetch_and_format_external_id_links(qid):
     results = fetch_external_id_links(qid)
     return format_external_id_links_results(results)
+
+
+def fetch_wikidata_languages(site):
+    """get all languges for wikidata labels, descriptions, aliases
+    https://www.wikidata.org/w/api.php?action=help&modules=query%2Bwbcontentlanguages
+    """
+    params = {
+        "action": "query",
+        "meta": "wbcontentlanguages",
+        "format": "json",
+        "wbclcontext": "term",
+        "wbclprop": "code|name",
+    }
+    api_request = api.Request(site=site, parameters=params)
+    result = api_request.submit()
+
+    return result["query"]["wbcontentlanguages"]
+
+
+def format_item_languages(results, item_lang_codes):
+    item_langs = {}
+
+    for lang in results.values():
+        if lang["code"] in item_lang_codes:
+            item_langs[lang["code"]] = lang["name"]
+
+    return item_langs
+
+
+def fetch_and_format_item_languages(site, item_lang_codes):
+    """get the language names for all the language codes in an item"""
+    results = fetch_wikidata_languages(site)
+    return format_item_languages(results, item_lang_codes)

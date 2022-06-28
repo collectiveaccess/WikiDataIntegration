@@ -384,6 +384,20 @@ def create_id_label_dictionary(item, item_json):
     return wq.fetch_and_format_labels_for_ids_sqarql(ids)
 
 
+def get_all_language_codes_for_item(item):
+    """get all the language codes in an item"""
+    item_lang_codes = set()
+
+    for lang, value in item.labels.items():
+        item_lang_codes.add(lang)
+    for lang, value in item.descriptions.items():
+        item_lang_codes.add(lang)
+    for lang, value in item.aliases.items():
+        item_lang_codes.add(lang)
+
+    return item_lang_codes
+
+
 def format_display_item(item, site):
     """takes the json from a item and reshapes it to fit the needs of the
     of our /items/{id} API endpoint
@@ -417,5 +431,10 @@ def format_display_item(item, site):
     tmp = ws.format_item_claims(item, id_label_dict, media_metadata, external_id_links)
     data["statements"] = tmp["statements"]
     data["identifiers"] = tmp["identifiers"]
+
+    # get all the language names for the all the language codes in an item
+    item_lang_codes = get_all_language_codes_for_item(item)
+    langs_dict = wq.fetch_and_format_item_languages(site, item_lang_codes)
+    data["languages"] = langs_dict
 
     return data
