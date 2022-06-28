@@ -360,18 +360,18 @@ def get_commons_media_for_item(item):
 
     for prop, claims in item.claims.items():
         for claim in claims:
-            if claim.type == "commonsMedia":
+            if claim.type == "commonsMedia" and claim.target:
                 media.add(claim.target.title())
 
             for source_dict in claim.sources:
                 for prop, sources in source_dict.items():
                     for source in sources:
-                        if source.type == "commonsMedia":
+                        if source.type == "commonsMedia" and claim.target:
                             media.add(source.target.title())
 
             for prop, qualifiers in claim.qualifiers.items():
                 for qualifier in qualifiers:
-                    if qualifier.type == "commonsMedia":
+                    if qualifier.type == "commonsMedia" and claim.target:
                         media.add(qualifier.target.title())
     return list(media)
 
