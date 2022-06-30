@@ -172,3 +172,11 @@ def delete_all_items():
     content = {"message": "records deleted"}
 
     return JSONResponse(content=content, headers=headers)
+
+
+@app.get("/get_menu_options")
+def all_props_for_ids(ids):
+    ids_list = ids.split("|")
+    content = wq.fetch_and_format_menu_options(ids_list)
+
+    return JSONResponse(content=content, headers=headers)

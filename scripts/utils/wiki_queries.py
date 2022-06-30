@@ -347,3 +347,55 @@ def fetch_and_format_item_languages(site, item_lang_codes):
     """get the language names for all the language codes in an item"""
     results = fetch_wikidata_languages(site)
     return format_item_languages(results, item_lang_codes)
+
+
+def fetch_all_props_for_ids(ids):
+    """get all the distinct properties for a list of item Q ids"""
+    query = """
+    SELECT DISTINCT ?item ?itemLabel {
+        VALUES (?record) {%s}
+        ?record ?p ?statement .
+        ?item wikibase:claim ?p .
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+    """ % " ".join(
+        [f"(wd:{id})" for id in ids]
+    )
+    print(query)
+
+    return wikidata_query(query)
+
+
+def format_menu_options(results):
+    data = {}
+    for result in results:
+        qid = result["item"]["value"].split("/")[-1]
+        value = result["itemLabel"]["value"]
+        if qid in allowed_props_2:
+            data[qid] = value
+
+    return data
+
+
+def fetch_and_format_menu_options(ids):
+    results = fetch_all_props_for_ids(ids)
+    return format_menu_options(results)
+
+
+allowed_props = {
+    "choreographer": "P1809",
+    "composer": "P86",
+    "costume designer": "P2515",
+    "country": "P17",
+    # "employer": "P108",
+    "lighting designer": "P5026",
+    "location of first performance": "P4647",
+    "musical conductor": "P3300",
+    "notable works": "P800",
+    "production designer": "P2554",
+    "scenographer": "P4608",
+    "student of": "P1066",
+    "student": "P802",
+}
+
+allowed_props_2 = {y: x for x, y in allowed_props.items()}
