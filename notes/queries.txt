@@ -74,15 +74,143 @@ https://stackoverflow.com/questions/36972156/how-to-search-images-in-wikimedia-c
 
 https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&titles=File:Gingerbread_House_Essex_CT.jpg|File:Test.jpg&iiprop=url|size|mime|thumbmime|mediatype|comment&format=json&iiurlwidth=300
 
+
 =====
+get all properties for an item
 
-TODOS
+List all wikidata properties of a specific entity with SPARQL
+https://stackoverflow.com/questions/72711757/list-all-wikidata-properties-of-a-specific-entity-with-sparql
 
-get properites that are external-id
-get the url format for each property
-create url link for given id and format
-return data in api
+SELECT ?wd ?wdLabel ?ps_Label  WHERE {
+  VALUES (?item) {(wd:Q111420520)} ?item ?p ?statement .
+  ?statement ?ps ?ps_ .
+  ?wd wikibase:claim ?p.
+  ?wd wikibase:statementProperty ?ps.
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+}
 
-make query for wikimedia commons items
-return data in api
-https://commons.wikimedia.org/w/api.php?action=help&modules=query%2Bimageinfo
+
+SELECT ?wd ?wdLabel  WHERE {
+  VALUES (?item) {(wd:Q111420520 )} ?item ?p ?statement .
+   ?wd wikibase:claim ?p.
+   SERVICE wikibase:label {bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".    }
+}
+
+SELECT ?item ?wd ?wdLabel    {
+  VALUES (?item) {(wd:Q111420520) (wd:Q27107690) } ?item ?p ?statement .
+  ?wd wikibase:claim ?p.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+}
+ order by ?item
+
+===
+
+count number of times a property exists for multiple entities
+
+https://query.wikidata.org/#SELECT%20%28COUNT%28%3Fitem%29%20as%20%3Fcount%20%29%20%3Fwd%20%3FwdLabel%20%7B%0A%20%20VALUES%20%28%3Fitem%29%20%7B%28wd%3AQ16973731%29%20%28wd%3AQ7341937%29%20%28wd%3AQ4878310%29%20%28wd%3AQ5294846%29%20%0A%20%20%28wd%3AQ107425418%29%20%28wd%3AQ86095846%29%20%28wd%3AQ7313336%29%20%28wd%3AQ6166129%29%20%28wd%3AQ155538%29%0A%20%20%28wd%3AQ487604%29%20%28wd%3AQ711688%29%0A%20%20%7D%0A%20%20%3Fitem%20%3Fp%20%3Fstatement%20.%0A%20%20%3Fwd%20wikibase%3Aclaim%20%3Fp.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22%20%7D%0A%7D%0AGROUP%20BY%20%3Fwd%20%3FwdLabel%0AORDER%20BY%20DESC%28%3Fcount%29%0A%0A
+
+
+
+
+SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
+  VALUES (?item) {(wd:Q16973731) (wd:Q7341937) (wd:Q4878310) (wd:Q5294846)
+  (wd:Q107425418) (wd:Q86095846) (wd:Q7313336) (wd:Q6166129) (wd:Q155538)
+  (wd:Q487604) (wd:Q711688)
+  }
+  ?item ?p ?statement .
+  ?wd wikibase:claim ?p.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+}
+GROUP BY ?wd ?wdLabel ?wdDescription
+ORDER BY DESC(?count)
+
+
+
+
+https://stackoverflow.com/questions/51912599/get-records-for-a-list-of-multiple-entities-on-wikidata
+
+-=====
+
+#Star Wars films
+SELECT ?item  ?itemLabel
+WHERE
+{
+  ?item wdt:P179 wd:Q22092344.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+
+#Actors in Star Wars Episode IV: A New Hope
+
+SELECT ?actor ?actorLabel
+WHERE
+{
+  wd:Q17738 wdt:P161 ?actor.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+#Actors in Star Wars Episode IV: A New Hope
+
+SELECT ?actor ?actorLabel
+WHERE
+{
+  wd:Q17738 wdt:P161 ?actor.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+
+#Films in the Star Wars OR Star Trek film series
+
+SELECT ?item  ?itemLabel
+WHERE
+{
+  {?item wdt:P179 wd:Q22092344.} # item is part of Star Wars (film series)
+  UNION                          # OR
+  {?item wdt:P179 wd:Q1102217.}   # item is part of the Star Trek film series
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+#items that are part of the Star Wars film series, and the director of each film.
+
+SELECT ?item  ?itemLabel ?director
+WHERE
+{
+  ?item wdt:P179 wd:Q22092344. # item is part of the series Star Wars (film series)
+  ?item wdt:P57 ?director.     # item’s director property’s value is collected by the director variable
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+#  director and screenwriter (P58) of each film in the Star Wars film series
+
+#Star Wars films
+
+SELECT ?item  ?itemLabel ?directorLabel ?screenwriterLabel
+WHERE
+{
+  ?item wdt:P179 wd:Q22092344. # item is part of the series Star Wars (film series)
+  ?item wdt:P57 ?director.     # item’s director property’s value is collected by the director variable
+  ?item wdt:P58 ?screenwriter. # item’s screenwriter property’s value is collected by the screenwriter variable
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+
+}
+
+==
+
+query used by query builder when you click on graph node
+
+ SELECT ?p (SAMPLE(?pl) AS ?pl_) (COUNT(?o) AS ?count ) (group_concat(?ol;separator=", ") AS ?ol_) WHERE {
+   <http://www.wikidata.org/entity/Q487604> ?p ?o . ?o <http://www.w3.org/2000/01/rdf-schema#label> ?ol .
+   FILTER ( LANG(?ol) = "en" ) ?s <http://wikiba.se/ontology#directClaim> ?p .
+   ?s rdfs:label ?pl .
+   FILTER ( LANG(?pl) = "en" )
+ } group by ?p
+
+p: P106
+pl_: occupation
+count: 7
+ol_: ballet dancer, artist, costume designer, ballet master, music pedagogue, dancer, choreographer

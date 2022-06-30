@@ -1,0 +1,199 @@
+
+Q155538: Pina
+
+P1066: student of
+P802: student
+P1809: choreographer
+P800: notable work
+
+
+# Raphaëlle Delaunay is student of Pina
+SELECT ?target ?targetLabel WHERE {
+  ?target wdt:P1066  wd:Q155538.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+# Pina is teacher of Raphaëlle Delaunay
+SELECT ?target ?targetLabel WHERE {
+   wd:Q155538 wdt:P802  ?target.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+===
+
+# Kurt Jones is teacher of Pina
+SELECT ?target ?targetLabel WHERE {
+  ?target wdt:P802  wd:Q155538.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+# Pina is student of Kurt Jones, Antony Tudor, José Limón
+SELECT ?target ?targetLabel WHERE {
+  wd:Q155538 wdt:P1066  ?target.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+==
+
+# Café Müller, Kontakthof, Q3337899, Q3361372, Q57502753
+SELECT ?target ?targetLabel WHERE {
+  ?target wdt:P1809  wd:Q155538.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+# Café Müller
+SELECT ?target ?targetLabel WHERE {
+   wd:Q155538  wdt:P800 ?target .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+==
+
+all porperties of venues
+
+
+SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
+  VALUES (?item) {(wd:Q54675116) (wd:Q72912) (wd:Q2527311) (wd:Q4820851)
+  (wd:Q7896439)
+  }
+  ?item ?p ?statement .
+  ?wd wikibase:claim ?p.
+
+   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+}
+GROUP BY ?wd ?wdLabel ?wdDescription
+ORDER BY DESC(?count)
+
+ ==
+
+ all properties of people
+
+ SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
+  VALUES (?item) {(wd:Q16973731) (wd:Q7341937) (wd:Q4878310) (wd:Q5294846)
+  (wd:Q107425418) (wd:Q86095846) (wd:Q7313336) (wd:Q6166129) (wd:Q155538)
+  (wd:Q487604) (wd:Q711688)
+  }
+  ?item ?p ?statement .
+  ?wd wikibase:claim ?p.
+
+   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+}
+GROUP BY ?wd ?wdLabel ?wdDescription
+ORDER BY DESC(?count)
+
+
+==
+
+all properties of works
+
+SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
+  VALUES (?item) {(wd:Q620638) (wd:Q3216714) (wd:Q21998396) (wd:Q21998489)
+  (wd:Q23035425) (wd:Q25217452) (wd:Q25217465) (wd:Q57502753)
+  }
+  ?item ?p ?statement .
+  ?wd wikibase:claim ?p.
+
+   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+}
+GROUP BY ?wd ?wdLabel ?wdDescription
+ORDER BY DESC(?count)
+
+
+=================
+
+# works choregraphed by martha graham
+ 9 records
+
+SELECT distinct ?item ?itemLabel ?desc  WHERE {
+  ?item wdt:P1809 wd:Q487604.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+
+
+# works choregraphed by martha graham. list other choregrapher on the project,
+11 records
+
+SELECT distinct ?item ?itemLabel linkToLabel  ?desc  WHERE {
+  ?item wdt:P1809 wd:Q487604.
+  ?item wdt:P1809 ?linkTo .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+
+
+======
+https://stackoverflow.com/questions/56310085/find-wikidata-properties-with-sparql-and-use-them-in-the-same-query-or-using-a
+
+
+you get the mapping from wdt: to wd: through the wikibase:directClaim predicate.
+
+
+SELECT ?authItem ?authItemLabel ?auth ?authLabel   ?countryLabel ?remoteID ?desc WHERE {
+  ?authItem wdt:P31 wd:Q19595382.
+  ?authItem schema:description ?desc.
+   ?authItem wikibase:directClaim ?auth .
+  wd:Q5145349 ?auth ?remoteID .
+   FILTER((LANG(?desc)) = "en")
+  SERVICE wikibase:label { bd:serviceParam wikibase:language " en". }
+}
+
+====
+https://stackoverflow.com/questions/56486888/how-to-get-property-labels-from-wikidata-using-sparql
+
+SELECT ?item  ?itemLabel ?a ?aLabel ?propLabel   ?bLabel
+WHERE
+{
+  ?item rdfs:label "weather"@en.
+  ?item ?a ?b.
+  ?prop wikibase:directClaim ?a .
+
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+
+===
+
+#defaultView:Graph
+SELECT ?item1 ?image1 ?item1Label ?item2 ?image2 ?item2Label ?edgeLabel
+WITH {
+  SELECT ?item1 WHERE {
+    VALUES ?item1 { wd:Q61762119 wd:Q1192305 wd:Q20503437 wd:Q28537550 wd:Q430682 wd:Q69562155 wd:Q69561988 wd:Q571 wd:Q155626 wd:Q2664039 wd:Q3560705 wd:Q160236 wd:Q4010432 wd:Q382307 wd:Q42745 wd:Q65966004 wd:Q15221656 wd:Q17494007 wd:Q23402 wd:Q65966300 wd:Q49135}
+  }
+} AS %item1
+WITH {
+  SELECT (?item1 AS ?item2) WHERE {
+    INCLUDE %item1.
+  }
+} AS %item2
+WHERE {
+  INCLUDE %item1.
+  INCLUDE %item2.
+  ?item1 ?wdt ?item2.
+  ?edge wikibase:directClaim ?wdt;
+        a wikibase:Property.
+  OPTIONAL { ?item1 wdt:P18 ?image1. }
+  OPTIONAL { ?item2 wdt:P18 ?image2. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+
+==
+
+    SELECT distinct ?item ?itemLabel ?p    ?linkTo ?linkToLabel  ?desc  WHERE {
+
+     ?item wdt:P1809 wd:Q487604.
+
+
+   #?item wdt:P1809 ?linkTo .
+ # ?item ?p ?linkTo .
+  #?foo wikibase:directClaim ?p .
+  OPTIONAL{ wdt:P1809 schema:description ?desc  }.
+
+
+ # FILTER(?linkToLabel  = 'Martha Graham')
+
+
+ #?item ?wd ?linkTo
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }
+limit 50
