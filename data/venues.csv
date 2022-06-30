@@ -1,6 +1,6 @@
-name,city,state,id
-McCarter Theatre Center for the Performing Arts,,,Q555
-Brooklyn Academy of Music,,,Q556
-Wexner Center for the Arts,Columbus,OH,Q559
-August Wilson Center,Pittsburgh,PA,Q560
-Bass Concert Hall,Austin,TX,Q561
+name,city,state,id,wikidata.org id
+McCarter Theatre Center for the Performing Arts,,,Q555,Q54675116
+Brooklyn Academy of Music,,,Q556,Q72912
+Wexner Center for the Arts,Columbus,OH,Q559,Q2527311
+August Wilson Center,Pittsburgh,PA,Q560,Q4820851
+Bass Concert Hall,Austin,TX,Q561,Q7896439
