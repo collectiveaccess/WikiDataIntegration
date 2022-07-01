@@ -67,20 +67,7 @@ def read_wikidata_item(item_id: str):
 def read_search(keyword: str):
     site = pywikibot.Site("wikidata", "wikidata")
     if keyword:
-        results = wq.search_keyword(site, keyword)
-
-        content = []
-        for res in results:
-            data = {
-                "id": res["id"],
-                "label": res["label"],
-            }
-            label = res["label"]
-            if res["description"]:
-                label += f" ({res['description']})"
-            data["search_label"] = label
-
-            content.append(data)
+        content = wq.search_keyword(site, keyword)
     else:
         content = []
 

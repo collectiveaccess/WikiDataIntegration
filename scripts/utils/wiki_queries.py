@@ -32,7 +32,6 @@ def format_search_results(results, language="en"):
     else:
         tmp = []
         for result in results:
-            description = result["description"] if "description" in result else None
             if "label" in result:
                 label = result["label"]
             elif "aliases" in result:
@@ -40,13 +39,15 @@ def format_search_results(results, language="en"):
             else:
                 label = None
 
+            search_label = label
+            if "description" in result:
+                search_label += f" ({result['description']})"
+
             tmp.append(
                 {
                     "id": result["id"],
                     "label": label,
-                    "description": description,
-                    "url": result["url"],
-                    "language": language,
+                    "search_label": search_label
                 }
             )
         return tmp
