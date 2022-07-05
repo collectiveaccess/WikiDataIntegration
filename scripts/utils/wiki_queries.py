@@ -26,31 +26,24 @@ def fetch_search_results(site, keyword, language="en"):
 
 def format_search_results(results, language="en"):
     """format wbsearchentities results from wikidata"""
-    count = len(results)
-    if count == 0:
+    if len(results) == 0:
         return []
-    else:
-        tmp = []
-        for result in results:
-            if "label" in result:
-                label = result["label"]
-            elif "aliases" in result:
-                label = result["aliases"][0]
-            else:
-                label = None
 
-            search_label = label
-            if "description" in result:
-                search_label += f" ({result['description']})"
+    tmp = []
+    for result in results:
+        if "label" in result:
+            label = result["label"]
+        elif "aliases" in result:
+            label = result["aliases"][0]
+        else:
+            label = None
 
-            tmp.append(
-                {
-                    "id": result["id"],
-                    "label": label,
-                    "search_label": search_label
-                }
-            )
-        return tmp
+        search_label = label
+        if "description" in result:
+            search_label += f" ({result['description']})"
+
+        tmp.append({"id": result["id"], "label": label, "search_label": search_label})
+    return tmp
 
 
 def search_keyword(site, keyword, language="en"):
