@@ -1,4 +1,4 @@
-# select all properties
+# select all properties in wikidata
 
 SELECT ?property ?propertyLabel WHERE {
     ?property a wikibase:Property .
@@ -7,7 +7,9 @@ SELECT ?property ?propertyLabel WHERE {
     }
 }
 
-=====
+====
+
+count the number occurences for each property type in wikidata
 
 #Properties grouped by their Wikibase datatype (Q19798645) with number of properties
 #Properties grouped by their type with number of properties
@@ -20,34 +22,35 @@ SELECT (COUNT(?property) as ?pcount ) ?wbtype WHERE {
 GROUP BY ?wbtype
 ORDER BY DESC(?pcount)
 
-=====
+====
 
-# select all property and include wikibase datatype
+
+# select all properties in wikidata and include their wikibase datatype
 
 SELECT ?property ?propertyLabel  ?wbtype WHERE {
     ?property a wikibase:Property .
-  ?property wikibase:propertyType  ?wbtype.
+    ?property wikibase:propertyType  ?wbtype.
 
-    SERVICE wikibase:label {
-        bd:serviceParam wikibase:language "en" .
-    }
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "en" .}
 }
 limit 5
 
-=====
+====
 
-# select all propertythat are ExternalId
+
+# select all properties in wikidata that are ExternalId
 
 
 // 7180
 
 SELECT ?property ?propertyLabel ?value WHERE {
   ?property wikibase:propertyType wikibase:ExternalId .
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }
 
 
-=====
+============
+
 
 SPARQL query: how to get the external identifiers links (url) of a specific Wikidata ID?
 
@@ -63,7 +66,8 @@ SELECT ?property ?propertyLabel ?value WHERE {
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }
 
-=====
+============
+
 get info about wikimedia common items
 - size
 - links
@@ -75,41 +79,252 @@ https://stackoverflow.com/questions/36972156/how-to-search-images-in-wikimedia-c
 https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&titles=File:Gingerbread_House_Essex_CT.jpg|File:Test.jpg&iiprop=url|size|mime|thumbmime|mediatype|comment&format=json&iiurlwidth=300
 
 
-=====
+============
+
 get all properties for an item
 
 List all wikidata properties of a specific entity with SPARQL
 https://stackoverflow.com/questions/72711757/list-all-wikidata-properties-of-a-specific-entity-with-sparql
 
-SELECT ?wd ?wdLabel ?ps_Label  WHERE {
-  VALUES (?item) {(wd:Q111420520)} ?item ?p ?statement .
+
+use: ?item ?p ?statement .
+
+don't use any wikibase actions
+
+SELECT ?item ?itemLabel ?p ?pLabel ?statement ?statementLabel
+  ?ps ?psLabel ?ps_ ?ps_Label
+  ?wd ?wdLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
+}
+
+28 resulsts
+
+item              wd:Q111420520
+itemLabel         Karl Hirsch
+p                 schema:version
+pLabel            http://schema.org/version
+statement         1635757150
+statementLabel    1635757150
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               wdt:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               wdt:P19
+pLabel          http://www.wikidata.org/prop/direct/P19
+statement       wd:Q64
+statementLabel  Berlin
+
+
+==
+use: ?item ?p ?statement ., ?statement ?ps ?ps_ .
+
+don't use any wikibase actions
+
+SELECT ?item ?itemLabel ?p ?pLabel ?statement ?statementLabel
+  ?ps ?psLabel ?ps_ ?ps_Label
+  ?wd ?wdLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
+  ?statement ?ps ?ps_ .
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
+}
+
+4852 results
+
+==
+
+use: ?item ?p ?statement .
+
+use: ?wd wikibase:claim ?p.
+
+
+SELECT ?item ?itemLabel ?p ?pLabel ?statement ?statementLabel
+  ?ps ?psLabel ?ps_ ?ps_Label
+  ?wd ?wdLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
+  ?wd wikibase:claim ?p.
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
+}
+
+10 results
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+wd              wd:P19
+wdLabel         place of birth
+
+
+==
+
+use: ?item ?p ?statement . ?statement ?ps ?ps_ .
+
+use: ?wd wikibase:claim ?p.
+
+
+SELECT ?item ?itemLabel ?p ?pLabel ?statement ?statementLabel
+  ?ps ?psLabel ?ps_ ?ps_Label
+  ?wd ?wdLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
+  ?statement ?ps ?ps_ .
+  ?wd wikibase:claim ?p.
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
+}
+
+44 results
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+ps              wikibase:rank
+psLabel         http://wikiba.se/ontology#rank
+ps_             wikibase:NormalRank
+ps_Label        http://wikiba.se/ontology#NormalRank
+wd              wd:P19
+wdLabel         place of birth
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+ps              prov:wasDerivedFrom
+psLabel         http://www.w3.org/ns/prov#wasDerivedFrom
+ps_             wdref:a1075a303c88e2996e64cc80ca65bd0f958d712a
+ps_Label        http://www.wikidata.org/reference/a1075a303c88e2996e64cc80ca65bd0f958d712a
+wd              wd:P19
+wdLabel         place of birth
+
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+ps              rdf:type
+psLabel         http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+ps_             wikibase:BestRank
+ps_Label        http://wikiba.se/ontology#BestRank
+wd              wd:P19
+wdLabel         place of birth
+
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+ps              ps:P19
+psLabel         http://www.wikidata.org/prop/statement/P19
+ps_             wd:Q64
+ps_Label        Berlin
+wd              wd:P19
+wdLabel         place of birth
+
+
+==
+
+use: ?item ?p ?statement . ?statement ?ps ?ps_ .
+
+use: ?wd wikibase:claim ?p. ?wd wikibase:statementProperty ?ps.
+
+SELECT ?item ?itemLabel ?p ?pLabel ?statement ?statementLabel
+  ?ps ?psLabel ?ps_ ?ps_Label
+  ?wd ?wdLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
   ?statement ?ps ?ps_ .
   ?wd wikibase:claim ?p.
   ?wd wikibase:statementProperty ?ps.
-  SERVICE wikibase:label {bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
 }
 
 
-SELECT ?wd ?wdLabel  WHERE {
-  VALUES (?item) {(wd:Q111420520 )} ?item ?p ?statement .
-   ?wd wikibase:claim ?p.
-   SERVICE wikibase:label {bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".    }
+10 results
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/P19
+statement       wds:Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+statementLabel  statement/Q111420520-74ca2522-4bd1-da15-60eb-4b15855a4a37
+ps              ps:P19
+psLabel         http://www.wikidata.org/prop/statement/P19
+ps_             wd:Q64
+ps_Label        Berlin
+wd              wd:P19
+wdLabel         place of birth
+
+==
+
+use: ?item ?p ?statement .
+
+use: ?wd wikibase:directClaim ?p.
+
+
+SELECT ?item ?itemLabel ?p ?pLabel ?statement ?statementLabel
+  ?ps ?psLabel ?ps_ ?ps_Label
+  ?wd ?wdLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
+  ?wd wikibase:directClaim ?p.
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
 }
 
-SELECT ?item ?wd ?wdLabel    {
-  VALUES (?item) {(wd:Q111420520) (wd:Q27107690) } ?item ?p ?statement .
-  ?wd wikibase:claim ?p.
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
-}
- order by ?item
+10 results
 
-===
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+p               p:P19
+pLabel          http://www.wikidata.org/prop/direct/P19
+statement       wd:Q64
+statementLabel  Berlin
+wd              wd:P19
+wdLabel         place of birth
+
+==
+
+use ?wd wikibase:directClaim ?p. with basic columns
+
+SELECT ?item ?itemLabel ?wd ?wdLabel  ?statement ?statementLabel WHERE {
+  VALUES (?item) {(wd:Q111420520)}.
+  ?item ?p ?statement .
+  ?wd wikibase:directClaim ?p.
+  SERVICE wikibase:label {bd:serviceParam wikibase:language "en".}
+}
+
+
+item            wd:Q111420520
+itemLabel       Karl Hirsch
+wd              wd:P19
+wdLabel         place of birth
+statement       wd:Q64
+statementLabel  Berlin
+
+============
 
 count number of times a property exists for multiple entities
 
 https://query.wikidata.org/#SELECT%20%28COUNT%28%3Fitem%29%20as%20%3Fcount%20%29%20%3Fwd%20%3FwdLabel%20%7B%0A%20%20VALUES%20%28%3Fitem%29%20%7B%28wd%3AQ16973731%29%20%28wd%3AQ7341937%29%20%28wd%3AQ4878310%29%20%28wd%3AQ5294846%29%20%0A%20%20%28wd%3AQ107425418%29%20%28wd%3AQ86095846%29%20%28wd%3AQ7313336%29%20%28wd%3AQ6166129%29%20%28wd%3AQ155538%29%0A%20%20%28wd%3AQ487604%29%20%28wd%3AQ711688%29%0A%20%20%7D%0A%20%20%3Fitem%20%3Fp%20%3Fstatement%20.%0A%20%20%3Fwd%20wikibase%3Aclaim%20%3Fp.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22%20%7D%0A%7D%0AGROUP%20BY%20%3Fwd%20%3FwdLabel%0AORDER%20BY%20DESC%28%3Fcount%29%0A%0A
-
-
 
 
 SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
@@ -124,82 +339,13 @@ SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
 GROUP BY ?wd ?wdLabel ?wdDescription
 ORDER BY DESC(?count)
 
-
-
+==================
 
 https://stackoverflow.com/questions/51912599/get-records-for-a-list-of-multiple-entities-on-wikidata
 
--=====
 
-#Star Wars films
-SELECT ?item  ?itemLabel
-WHERE
-{
-  ?item wdt:P179 wd:Q22092344.
-SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-}
+==================
 
-
-
-#Actors in Star Wars Episode IV: A New Hope
-
-SELECT ?actor ?actorLabel
-WHERE
-{
-  wd:Q17738 wdt:P161 ?actor.
-SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-}
-
-
-#Actors in Star Wars Episode IV: A New Hope
-
-SELECT ?actor ?actorLabel
-WHERE
-{
-  wd:Q17738 wdt:P161 ?actor.
-SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-}
-
-
-
-#Films in the Star Wars OR Star Trek film series
-
-SELECT ?item  ?itemLabel
-WHERE
-{
-  {?item wdt:P179 wd:Q22092344.} # item is part of Star Wars (film series)
-  UNION                          # OR
-  {?item wdt:P179 wd:Q1102217.}   # item is part of the Star Trek film series
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-}
-
-
-#items that are part of the Star Wars film series, and the director of each film.
-
-SELECT ?item  ?itemLabel ?director
-WHERE
-{
-  ?item wdt:P179 wd:Q22092344. # item is part of the series Star Wars (film series)
-  ?item wdt:P57 ?director.     # item’s director property’s value is collected by the director variable
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-}
-
-
-#  director and screenwriter (P58) of each film in the Star Wars film series
-
-#Star Wars films
-
-SELECT ?item  ?itemLabel ?directorLabel ?screenwriterLabel
-WHERE
-{
-  ?item wdt:P179 wd:Q22092344. # item is part of the series Star Wars (film series)
-  ?item wdt:P57 ?director.     # item’s director property’s value is collected by the director variable
-  ?item wdt:P58 ?screenwriter. # item’s screenwriter property’s value is collected by the screenwriter variable
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-
-}
-
-==
 
 query used by query builder when you click on graph node
 
@@ -214,3 +360,176 @@ p: P106
 pl_: occupation
 count: 7
 ol_: ballet dancer, artist, costume designer, ballet master, music pedagogue, dancer, choreographer
+
+
+
+ SELECT ?prop (SAMPLE(?propLabel) AS ?pl_) (COUNT(?item) AS ?count ) (group_concat(?itemLabel;separator=", ") AS ?itemLabel_) WHERE {
+   wd:Q487604 ?prop ?item .
+   ?item rdfs:label ?itemLabel .
+   FILTER ( LANG(?itemLabel) = "en" ) ?s wikibase:directClaim  ?prop .
+   ?s rdfs:label ?propLabel .
+   FILTER ( LANG(?propLabel) = "en" )
+ } group by ?prop
+
+ =======
+
+Find Wikidata properties with SPARQL and use them in the same query (Or: Using a subject as a predicate)
+
+https://stackoverflow.com/questions/56310085/find-wikidata-properties-with-sparql-and-use-them-in-the-same-query-or-using-a
+
+
+
+you get the mapping from wdt: to wd: through the wikibase:directClaim predicate.
+
+
+SELECT ?authItem ?authItemLabel ?auth ?authLabel   ?countryLabel ?remoteID ?desc WHERE {
+  ?authItem wdt:P31 wd:Q19595382.
+  ?authItem schema:description ?desc.
+   ?authItem wikibase:directClaim ?auth .
+  wd:Q5145349 ?auth ?remoteID .
+   FILTER((LANG(?desc)) = "en")
+  SERVICE wikibase:label { bd:serviceParam wikibase:language " en". }
+}
+
+==================
+
+
+How to get property labels from Wikidata using SPARQL
+
+https://stackoverflow.com/questions/56486888/how-to-get-property-labels-from-wikidata-using-sparql
+
+The ?prop wikibase:directClaim ?a . line turns out to be pretty simple.
+Wikibase defines directClaim to map properties to entities. This then allows it
+to define tuples about properties (ie. a label). Many other ontologies just use
+the same identifiers.
+
+
+SELECT ?item  ?itemLabel ?a ?aLabel ?propLabel   ?b ?bLabel
+WHERE
+{
+  ?item rdfs:label "weather"@en.
+  ?item ?a ?b.
+  ?prop wikibase:directClaim ?a .
+
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+
+==================
+
+
+MET example of graph of  links to a painting
+
+#defaultView:Graph
+
+
+SELECT ?item1 ?image1 ?item1Label ?item2 ?image2 ?item2Label ?edgeLabel
+WITH {
+  SELECT ?item1 WHERE {
+    VALUES ?item1 { wd:Q61762119 wd:Q1192305 wd:Q20503437 wd:Q28537550 wd:Q430682 wd:Q69562155 wd:Q69561988 wd:Q571 wd:Q155626 wd:Q2664039 wd:Q3560705 wd:Q160236 wd:Q4010432 wd:Q382307 wd:Q42745 wd:Q65966004 wd:Q15221656 wd:Q17494007 wd:Q23402 wd:Q65966300 wd:Q49135}
+  }
+} AS %item1
+WITH {
+  SELECT (?item1 AS ?item2) WHERE {
+    INCLUDE %item1.
+  }
+} AS %item2
+WHERE {
+  INCLUDE %item1.
+  INCLUDE %item2.
+  ?item1 ?wdt ?item2.
+  ?edge wikibase:directClaim ?wdt;
+        a wikibase:Property.
+  OPTIONAL { ?item1 wdt:P18 ?image1. }
+  OPTIONAL { ?item2 wdt:P18 ?image2. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+
+
+
+==================
+
+What does SPARQL "a" predicate do?
+https://stackoverflow.com/questions/56855885/what-does-sparql-a-predicate-do
+
+
+==============
+How to filter objects by property on Wikidata using SPARQL?
+https://stackoverflow.com/questions/52497634/how-to-filter-objects-by-property-on-wikidata-using-sparql
+
+
+I cannot find a way to filter objects by name. For example, this query should limit country objects to those with official name "Canada":
+
+@@
+
+Knowing how these things go, you'll likely be happier in the end with this somewhat fuzzy filter, than an exact match test... but you could change filter ( contains (str(?official_name), "Canada") ) below to filter ( str(?official_name) = "Canada")
+
+
+SELECT DISTINCT ?country ?official_name WHERE {
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en,fr". }
+  ?country wdt:P31 wd:Q6256.
+  ?country wdt:P1448 ?official_name.
+   filter ( contains (str(?official_name), "Canada") )
+}
+LIMIT 100
+
+
+
+==================
+
+
+SPARQL Query to extract subject predicate and object for persons
+https://stackoverflow.com/questions/50399623/sparql-query-to-extract-subject-predicate-and-object-for-persons
+
+
+The query will also only return ?objects that are in English, you can remove
+the && lang(?object) = "en" to get all objects. The line ?subject a dbo:Person.
+ is not strictly required, but I've left it in so that you can remove all
+  filtering and still only get people.
+
+
+SELECT DISTINCT *
+WHERE {
+   ?subject a dbo:Person.
+   ?subject ?predicate ?object.
+   FILTER (?subject IN (dbr:John_Lennon, dbr:Yoko_Ono, dbr:Jimmy_Carter,
+           dbr:Bill_Clinton) && lang(?object) = "en")
+} LIMIT 20
+
+SPARQL 1.1 supports inline data via VALUES . language filtering can be done
+ via disjunction || on the filter predicates, e.g. either URI or English literal
+
+SELECT DISTINCT ?subject ?predicate ?object {
+  VALUES ?subject {dbr:John_Lennon dbr:Yoko_Ono  dbr:Jimmy_Carter  dbr:Bill_Clinton}
+  ?subject ?predicate ?object
+  FILTER (isURI(?object) || langmatches(lang(?object), "en")) }
+
+==================
+Sparql Query for wikidata to get multiple values from property
+https://stackoverflow.com/questions/68205400/sparql-query-for-wikidata-to-get-multiple-values-from-property
+
+==================
+
+
+Wikidata SPARQL Query Filter Or
+https://stackoverflow.com/questions/57814484/wikidata-sparql-query-filter-or
+
+
+I'm trying to query Wikidata for all items that are an instance of
+business wd:Q4830453 OR nonprofit organization wd:Q163740
+
+better solution
+
+SELECT *
+WHERE {
+    VALUES ?o { wd:Q4830453 wd:Q163740 }
+    ?s wdt:P31 ?o.
+}
+
+bad solution
+
+SELECT *
+WHERE {
+    ?s wdt:P31 ?o.
+    FILTER (?o IN (wd:Q4830453, wd:Q163740 ) )
+}

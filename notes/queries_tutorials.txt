@@ -1,0 +1,67 @@
+#Star Wars films
+SELECT ?item  ?itemLabel
+WHERE
+{
+  ?item wdt:P179 wd:Q22092344.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+
+#Actors in Star Wars Episode IV: A New Hope
+
+SELECT ?actor ?actorLabel
+WHERE
+{
+  wd:Q17738 wdt:P161 ?actor.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+#Actors in Star Wars Episode IV: A New Hope
+
+SELECT ?actor ?actorLabel
+WHERE
+{
+  wd:Q17738 wdt:P161 ?actor.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+
+#Films in the Star Wars OR Star Trek film series
+
+SELECT ?item  ?itemLabel
+WHERE
+{
+  {?item wdt:P179 wd:Q22092344.} # item is part of Star Wars (film series)
+  UNION                          # OR
+  {?item wdt:P179 wd:Q1102217.}   # item is part of the Star Trek film series
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+#items that are part of the Star Wars film series, and the director of each film.
+
+SELECT ?item  ?itemLabel ?director
+WHERE
+{
+  ?item wdt:P179 wd:Q22092344. # item is part of the series Star Wars (film series)
+  ?item wdt:P57 ?director.     # item’s director property’s value is collected by the director variable
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+}
+
+
+#  director and screenwriter (P58) of each film in the Star Wars film series
+
+#Star Wars films
+
+SELECT ?item  ?itemLabel ?directorLabel ?screenwriterLabel
+WHERE
+{
+  ?item wdt:P179 wd:Q22092344. # item is part of the series Star Wars (film series)
+  ?item wdt:P57 ?director.     # item’s director property’s value is collected by the director variable
+  ?item wdt:P58 ?screenwriter. # item’s screenwriter property’s value is collected by the screenwriter variable
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+
+}

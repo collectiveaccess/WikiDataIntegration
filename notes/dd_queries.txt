@@ -51,7 +51,7 @@ SELECT ?target ?targetLabel WHERE {
 
 ==
 
-all porperties of venues
+all properties of venues
 
 
 SELECT (COUNT(?item) as ?count ) ?wd ?wdLabel  ?wdDescription{
@@ -121,79 +121,22 @@ SELECT distinct ?item ?itemLabel linkToLabel  ?desc  WHERE {
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }
 
-
-======
-https://stackoverflow.com/questions/56310085/find-wikidata-properties-with-sparql-and-use-them-in-the-same-query-or-using-a
+==============
 
 
-you get the mapping from wdt: to wd: through the wikibase:directClaim predicate.
+filter directClaim by certain properties
 
+SELECT ?prop ?propLabel ?item ?itemLabel ?a WHERE {
+  { wd:Q487604 ?prop ?item. }
+  UNION
+  { ?item ?prop wd:Q487604. }
 
-SELECT ?authItem ?authItemLabel ?auth ?authLabel   ?countryLabel ?remoteID ?desc WHERE {
-  ?authItem wdt:P31 wd:Q19595382.
-  ?authItem schema:description ?desc.
-   ?authItem wikibase:directClaim ?auth .
-  wd:Q5145349 ?auth ?remoteID .
-   FILTER((LANG(?desc)) = "en")
-  SERVICE wikibase:label { bd:serviceParam wikibase:language " en". }
+  ?item rdfs:label ?itemLabel.
+
+  FILTER((LANG(?itemLabel)) = "en")
+  ?s wikibase:directClaim ?prop;
+    rdfs:label ?propLabel.
+  FILTER(?prop IN(wdt:P1809, wdt:P86, wdt:P2515, wdt:P17, wdt:P5026, wdt:P4647, wdt:P3300, wdt:P800, wdt:P2554, wdt:P4608, wdt:P1066, wdt:P802))
+  FILTER((LANG(?propLabel)) = "en")
 }
-
-====
-https://stackoverflow.com/questions/56486888/how-to-get-property-labels-from-wikidata-using-sparql
-
-SELECT ?item  ?itemLabel ?a ?aLabel ?propLabel   ?bLabel
-WHERE
-{
-  ?item rdfs:label "weather"@en.
-  ?item ?a ?b.
-  ?prop wikibase:directClaim ?a .
-
-
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-}
-
-===
-
-#defaultView:Graph
-SELECT ?item1 ?image1 ?item1Label ?item2 ?image2 ?item2Label ?edgeLabel
-WITH {
-  SELECT ?item1 WHERE {
-    VALUES ?item1 { wd:Q61762119 wd:Q1192305 wd:Q20503437 wd:Q28537550 wd:Q430682 wd:Q69562155 wd:Q69561988 wd:Q571 wd:Q155626 wd:Q2664039 wd:Q3560705 wd:Q160236 wd:Q4010432 wd:Q382307 wd:Q42745 wd:Q65966004 wd:Q15221656 wd:Q17494007 wd:Q23402 wd:Q65966300 wd:Q49135}
-  }
-} AS %item1
-WITH {
-  SELECT (?item1 AS ?item2) WHERE {
-    INCLUDE %item1.
-  }
-} AS %item2
-WHERE {
-  INCLUDE %item1.
-  INCLUDE %item2.
-  ?item1 ?wdt ?item2.
-  ?edge wikibase:directClaim ?wdt;
-        a wikibase:Property.
-  OPTIONAL { ?item1 wdt:P18 ?image1. }
-  OPTIONAL { ?item2 wdt:P18 ?image2. }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-}
-
-==
-
-    SELECT distinct ?item ?itemLabel ?p    ?linkTo ?linkToLabel  ?desc  WHERE {
-
-     ?item wdt:P1809 wd:Q487604.
-
-
-   #?item wdt:P1809 ?linkTo .
- # ?item ?p ?linkTo .
-  #?foo wikibase:directClaim ?p .
-  OPTIONAL{ wdt:P1809 schema:description ?desc  }.
-
-
- # FILTER(?linkToLabel  = 'Martha Graham')
-
-
- #?item ?wd ?linkTo
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-    }
-limit 50
+LIMIT 30
