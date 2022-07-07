@@ -10,10 +10,8 @@ This repo uses:
 Directories
 
 - api: code that runs the API
-- data: hardcoded data for this demo
 - logs: log files
 - notebooks: jupyter notebooks used during development
-- notes: random notes
 - scripts: scripts that run the API, interact with wikidata, import records to local instance of Wikibase
 
 
