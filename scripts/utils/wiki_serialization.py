@@ -1,6 +1,6 @@
 import re
 
-from utils.logger import logger
+from scripts.utils.logger import logger
 
 
 def get_claim_language(claim_dict):

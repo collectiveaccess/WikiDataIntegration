@@ -3,10 +3,10 @@ import sys
 from pathlib import Path
 import pywikibot
 
-from utils.logger import logger
+from scripts.utils.logger import logger
 from constants.languages import invalid_languages
-import utils.wiki_queries as wq
-import utils.wiki_serialization as ws
+import scripts.utils.wiki_queries as wq
+import scripts.utils.wiki_serialization as ws
 
 constants_path = Path(__file__).resolve().parent.parent / "constants"
 sys.path.append(str(constants_path))
