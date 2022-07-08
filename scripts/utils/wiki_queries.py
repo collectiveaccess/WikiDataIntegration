@@ -40,9 +40,25 @@ def format_search_results(results, language="en"):
 
         search_label = label
         if "description" in result:
-            search_label += f" ({result['description']})"
+            description = result["description"]
+            search_label += f" ({description})"
+        else:
+            description = None
 
-        tmp.append({"id": result["id"], "label": label, "search_label": search_label})
+        if 'display' in result:
+            lang = result["display"]["label"]["language"]
+        else:
+            lang = language
+
+        tmp.append(
+            {
+                "id": result["id"],
+                "label": label,
+                "search_label": search_label,
+                "description": description,
+                "language": lang,
+            }
+        )
     return tmp
 
 
