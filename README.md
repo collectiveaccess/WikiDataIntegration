@@ -4,12 +4,10 @@ WikiData integration
 This repo uses:
 
 - pywikibot to interact with Wikimedia / Wikidata
-- fastAPI to run an API
 - jupyter lab to run jupyter notebooks
 
 Directories
 
-- api: code that runs the API
 - logs: log files
 - notebooks: jupyter notebooks used during development
 - scripts: scripts that run the API, interact with wikidata, import records to local instance of Wikibase
@@ -25,11 +23,11 @@ Directories
 
 requires Python 3.6.8+
 
-Optional: create a virtual environment called 'myenv' using venv
+Optional: create a virtual environment called 'venv' using venv
 
 ```
-python3 -m venv myenv
-source myenv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 ```
 
 install libraries
@@ -52,26 +50,16 @@ Copy `user-password.sample.py` and rename it `user-password.py`. Replace 'my_use
 
 ## Run the code
 
-Start api
-
-```
-cd api
-uvicorn main:app --reload
-```
 
  Start jupyter notebooks
 
 ```
-// inside the root folder of the repo
-
 jupyter lab
 ```
 
 run the various scripts
 
 ```
-// inside the root folder of the repo
-
 python scripts/<file>.py
 ```
 
