@@ -4,7 +4,7 @@ from pathlib import Path
 import pywikibot
 
 from scripts.utils.logger import logger
-from constants.languages import invalid_languages
+from scripts.constants.languages import invalid_languages
 import scripts.utils.wiki_queries as wq
 import scripts.utils.wiki_serialization as ws
 
