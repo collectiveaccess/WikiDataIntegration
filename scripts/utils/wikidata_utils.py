@@ -436,5 +436,6 @@ def format_display_item(item, site):
     item_lang_codes = get_all_language_codes_for_item(item)
     langs_dict = wq.fetch_and_format_item_languages(site, item_lang_codes)
     data["languages"] = langs_dict
+    data["id"] = item.id
 
     return data
