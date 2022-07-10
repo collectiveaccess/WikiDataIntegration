@@ -321,7 +321,7 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
     """iterate through an item to get all item Q ids and property P ids"""
     claim_ids = set()
 
-    if include_pids:
+    if include_pids and 'claims' in item_json:
         claim_ids.update([prop for prop in item_json["claims"]])
 
     for prop, claims in item.claims.items():
@@ -351,7 +351,10 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
                     for qualifier in qualifiers:
                         add_nested_ids(qualifier, claim_ids)
 
-    return list(claim_ids)
+    if len(claim_ids) > 0:
+        return list(claim_ids)
+    else:
+        return []
 
 
 def get_commons_media_for_item(item):
@@ -381,7 +384,10 @@ def create_id_label_dictionary(item, item_json):
     ids = get_ids_for_item(item, item_json, include_pids=True, include_qids=True)
 
     # connect to wikidata.org API to get labels for a list of ids
-    return wq.fetch_and_format_labels_for_ids_sqarql(ids)
+    if len(ids) > 0:
+        return wq.fetch_and_format_labels_for_ids_sqarql(ids)
+    else:
+        return {}
 
 
 def get_all_language_codes_for_item(item):
