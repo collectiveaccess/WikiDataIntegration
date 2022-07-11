@@ -21,7 +21,7 @@ Directories
 
 3. install libraries
 
-requires Python 3.6.8+
+requires Python 3.8
 
 Optional: create a virtual environment called 'venv' using venv
 
@@ -33,7 +33,6 @@ source venv/bin/activate
 install libraries
 
 ```bash
-pip install wheel
 pip install -U setuptools
 pip install -r requirements.txt
 ```
