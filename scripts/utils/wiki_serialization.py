@@ -70,7 +70,7 @@ def get_claim_label(claim, ids_dict, include_qid=False):
         return
 
     if claim.type == "wikibase-item":
-        id = claim.target.title()
+        id = claim.target.id
         label = ids_dict[id]
 
         if include_qid:

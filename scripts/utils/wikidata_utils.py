@@ -307,7 +307,7 @@ def convert_to_local_claim_value(site, repo, claim, import_sitelinks):
 def add_nested_ids(claim_type, claim_ids):
     """get q ids for certain claim types"""
     if claim_type.type == "wikibase-item" and claim_type.target:
-        claim_ids.add(claim_type.target.title())
+        claim_ids.add(claim_type.target.id)
 
     if claim_type.type == "quantity" and claim_type.target:
         if claim_type.target.unit != "1":
