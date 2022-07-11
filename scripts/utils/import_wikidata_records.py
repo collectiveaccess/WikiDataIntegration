@@ -1,6 +1,6 @@
 import pywikibot
 
-import wikidata_utils as wd
+import scripts.utils.wikidata_utils as wd
 from scripts.utils.logger import logger
 import scripts.utils.wiki_queries as wq
 import scripts.utils.wiki_serialization as ws
@@ -14,7 +14,7 @@ def find_or_create_local_item(item_dict, local_site, local_repo):
     # check if item exists locally
     existing = False
     existing_id = None
-    results = wd.search_keyword(local_site, label, lang)
+    results = wq.search_keyword(local_site, label, lang)
     for result in results:
         # if no description, check if any of the existing records have same
         # label as the current row
@@ -213,8 +213,7 @@ def import_wikidata_item_to_local_wikibase(qid, site, local_site):
     item_dict = item.get()
 
     local_item = find_or_create_local_item(item_dict, local_site, local_repo)
-    add_statements_to_local_item(local_item, item_dict, repo, local_site, local_repo)
-
+    add_statements_to_local_item(item_dict, repo, local_item, local_site, local_repo)
     id_label_dict = wd.create_id_label_dictionary(item, item.toJSON())
     local_id_label_dict = create_local_id_label_dictionary(local_item)
 
