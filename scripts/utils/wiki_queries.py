@@ -169,7 +169,7 @@ def fetch_and_format_labels_for_ids_sqarql(ids):
     return format_wikidata_items_results(results)
 
 
-def fetch_and_format_labels_for_ids(ids, lang="en"):
+def fetch_and_format_labels_for_ids(ids, url=WIKI_BASE_URL, lang="en"):
     """
     get labels for a given list of Q ids and property ids from wikidata
 
@@ -186,7 +186,7 @@ def fetch_and_format_labels_for_ids(ids, lang="en"):
     for chunk_ids in chunked_list:
         ids_str = "|".join(chunk_ids)
         link = (
-            f"{WIKI_BASE_URL}/w/api.php?action=wbgetentities"
+            f"{url}/w/api.php?action=wbgetentities"
             f"&ids={ids_str}&props=labels&languages={lang}&format=json"
         )
         response = requests.get(link)
