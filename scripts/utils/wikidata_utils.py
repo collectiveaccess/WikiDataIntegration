@@ -2,6 +2,8 @@ from datetime import date
 import sys
 from pathlib import Path
 import pywikibot
+import time
+
 
 from scripts.utils.logger import logger
 from scripts.constants.languages import invalid_languages
@@ -411,6 +413,7 @@ def format_display_item(item, site):
     data = {}
     item_json = item.toJSON()
 
+    s1 = time.time()
     # reshape json to create {language: value} dictionary
     for field in ["labels", "descriptions", "aliases"]:
         if field in item_json:
@@ -419,9 +422,15 @@ def format_display_item(item, site):
             else:
                 data[field] = ws.format_item_field(item_json, field)
 
+    s2 = time.time()
+    print('basic', s2-s1)
+
     # create {item_id: label, property_id: label} dictionary so we can
     # include labels in api response
     id_label_dict = create_id_label_dictionary(item, item_json)
+
+    s3 = time.time()
+    print('create_id_label_dictionary', s3-s2)
 
     # get metadata for every commons media that is associated with this item
     # so we can add media metadata to api response
@@ -430,18 +439,30 @@ def format_display_item(item, site):
         site, media_files
     )
 
+    s4 = time.time()
+    print('media_files', s4-s3)
+
     # get links for external ids in this item so we can add links for
     # external id to api response
     external_id_links = wq.fetch_and_format_external_id_links(item.id)
 
+    s5 = time.time()
+    print('external_id_links', s5-s4)
+
     tmp = ws.format_item_claims(item, id_label_dict, media_metadata, external_id_links)
     data["statements"] = tmp["statements"]
     data["identifiers"] = tmp["identifiers"]
+
+    s6 = time.time()
+    print('claims', s6-s5)
 
     # get all the language names for the all the language codes in an item
     item_lang_codes = get_all_language_codes_for_item(item)
     langs_dict = wq.fetch_and_format_item_languages(site, item_lang_codes)
     data["languages"] = langs_dict
     data["id"] = item.id
+
+    s7 = time.time()
+    print('end', s7-s6)
 
     return data
