@@ -8,9 +8,18 @@ else:
     log_file = "errors.log"
 
 if os.environ.get("BASE_DIR"):
-    log_path = Path(os.environ.get("BASE_DIR"), "logs", log_file)
+    log_dir = Path(os.environ.get("BASE_DIR"), "logs")
 else:
-    log_path = Path(Path(__file__).parent.parent.parent, "logs", log_file)
+    log_dir = Path(Path(__file__).parent.parent.parent, "logs")
+log_path = log_dir / log_file
+
+# create directory and file  if it does not exists
+if not os.path.exists(log_dir):
+    os.mkdir(log_dir)
+if not os.path.exists(log_path):
+    with open(log_path, "w"):
+        pass
+
 date_format = "%Y-%m-%d %I:%M:%S %p"
 
 # log to console
