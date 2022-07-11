@@ -206,7 +206,6 @@ def add_sources_and_qualifiers_to_local_item(
 def import_wikidata_item_to_local_wikibase(qid, site, local_site):
     pywikibot.config.put_throttle = 1
     local_repo = local_site.data_repository()
-    print(local_site.throttle.writedelay)
 
     repo = site.data_repository()
     item = pywikibot.ItemPage(repo, qid)
@@ -227,3 +226,7 @@ def import_wikidata_item_to_local_wikibase(qid, site, local_site):
         local_site,
         local_repo,
     )
+
+    lang = wd.get_claim_language(item_dict)
+    label = item_dict["labels"][lang]
+    return {"id": local_item.id, "label": label}
