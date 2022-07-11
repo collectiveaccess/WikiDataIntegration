@@ -45,7 +45,7 @@ def format_search_results(results, language="en"):
         else:
             description = None
 
-        if 'display' in result:
+        if "display" in result:
             lang = result["display"]["label"]["language"]
         else:
             lang = language

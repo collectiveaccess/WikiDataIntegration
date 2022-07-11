@@ -323,7 +323,7 @@ def get_ids_for_item(item, item_json, include_pids=True, include_qids=True):
     """iterate through an item to get all item Q ids and property P ids"""
     claim_ids = set()
 
-    if include_pids and 'claims' in item_json:
+    if include_pids and "claims" in item_json:
         claim_ids.update([prop for prop in item_json["claims"]])
 
     for prop, claims in item.claims.items():
@@ -423,14 +423,14 @@ def format_display_item(item, site):
                 data[field] = ws.format_item_field(item_json, field)
 
     s2 = time.time()
-    print('basic', s2-s1)
+    print("basic", s2 - s1)
 
     # create {item_id: label, property_id: label} dictionary so we can
     # include labels in api response
     id_label_dict = create_id_label_dictionary(item, item_json)
 
     s3 = time.time()
-    print('create_id_label_dictionary', s3-s2)
+    print("create_id_label_dictionary", s3 - s2)
 
     # get metadata for every commons media that is associated with this item
     # so we can add media metadata to api response
@@ -440,21 +440,21 @@ def format_display_item(item, site):
     )
 
     s4 = time.time()
-    print('media_files', s4-s3)
+    print("media_files", s4 - s3)
 
     # get links for external ids in this item so we can add links for
     # external id to api response
     external_id_links = wq.fetch_and_format_external_id_links(item.id)
 
     s5 = time.time()
-    print('external_id_links', s5-s4)
+    print("external_id_links", s5 - s4)
 
     tmp = ws.format_item_claims(item, id_label_dict, media_metadata, external_id_links)
     data["statements"] = tmp["statements"]
     data["identifiers"] = tmp["identifiers"]
 
     s6 = time.time()
-    print('claims', s6-s5)
+    print("claims", s6 - s5)
 
     # get all the language names for the all the language codes in an item
     item_lang_codes = get_all_language_codes_for_item(item)
@@ -463,6 +463,6 @@ def format_display_item(item, site):
     data["id"] = item.id
 
     s7 = time.time()
-    print('end', s7-s6)
+    print("end", s7 - s6)
 
     return data

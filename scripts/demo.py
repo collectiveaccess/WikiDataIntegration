@@ -6,13 +6,13 @@ parent_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(parent_path))
 
 
-import utils.wiki_queries as wd
+import utils.wiki_queries as wd  # noqa:  E402
 
 site = pywikibot.Site("wikidata", "wikidata")
-results = wd.search_keyword(site, 'Earth')
+results = wd.search_keyword(site, "Earth")
 print(results)
 
-print('\n', '-----', '\n')
+print("\n", "-----", "\n")
 
 repo = site.data_repository()
 item = pywikibot.ItemPage(repo, "Q2")
