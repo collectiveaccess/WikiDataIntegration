@@ -466,3 +466,19 @@ def format_display_item(item, site):
     print("end", s7 - s6)
 
     return data
+
+
+def login(my_site):
+    # use userinfo to read cookie. must run userinfo before logged_in.
+    my_site.userinfo.get("id")
+
+    # if valid cookie, return
+    if my_site.logged_in():
+        return
+
+    # get password from password file
+    pywikibot.login.LoginManager(site=my_site).readPassword()
+
+    # login to site
+    pywikibot.data.api.LoginManager(site=my_site).login()
+    my_site.login()
