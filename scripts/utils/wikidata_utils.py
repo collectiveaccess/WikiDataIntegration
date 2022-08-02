@@ -63,7 +63,7 @@ def edit_entity(item, data):
         item.editEntity(data, summary="Setting item data.")
         return item
     except pywikibot.exceptions.OtherPageSaveError as err:
-        if err.reason.code == "not-recognized-language":
+        if hasattr(err.reason, 'code') and err.reason.code == "not-recognized-language":
             langs = set()
             for key in data.keys():
                 langs.update(data[key].keys())
