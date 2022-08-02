@@ -7,6 +7,7 @@ import scripts.utils.wiki_serialization as ws
 
 
 def find_or_create_local_item(item_dict, local_site, local_repo):
+    pywikibot.config.put_throttle = 1
     lang = ws.get_claim_language(item_dict)
     label = item_dict["labels"][lang]
     description = item_dict["descriptions"][lang]
