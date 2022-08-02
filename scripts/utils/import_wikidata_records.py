@@ -41,6 +41,8 @@ def find_or_create_local_item(item_dict, local_site, local_repo):
 
 
 def add_statements_to_local_item(item_dict, repo, local_item, local_site, local_repo):
+    pywikibot.config.put_throttle = 1
+
     # iterate over all the wikidata.org claims
     for property, values in item_dict["claims"].items():
         for claim in values:
@@ -168,6 +170,8 @@ def add_sources_and_qualifiers_to_local_item(
     local_site,
     local_repo,
 ):
+    pywikibot.config.put_throttle = 1
+
     # iterate over all the wikidata.org claims
     for property, claims in item_dict["claims"].items():
         for claim in claims:
