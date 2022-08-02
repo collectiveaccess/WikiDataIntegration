@@ -187,24 +187,31 @@ def add_sources_and_qualifiers_to_local_item(
                     ) == ws.get_claim_label(claim, id_label_dict, False):
                         local_claim = l_claim
 
-            add_source_to_wikidata_claim(
-                claim,
-                local_claim,
-                local_site,
-                local_repo,
-                site,
-                repo,
-                import_sitelinks=False,
-            )
-            add_qualifier_to_wikidata_claim(
-                claim,
-                local_claim,
-                local_site,
-                local_repo,
-                site,
-                repo,
-                import_sitelinks=False,
-            )
+            try:
+                add_source_to_wikidata_claim(
+                    claim,
+                    local_claim,
+                    local_site,
+                    local_repo,
+                    site,
+                    repo,
+                    import_sitelinks=False,
+                )
+            except:
+                logger.error(f"{claim.id} source not added")
+
+            try:
+                add_qualifier_to_wikidata_claim(
+                    claim,
+                    local_claim,
+                    local_site,
+                    local_repo,
+                    site,
+                    repo,
+                    import_sitelinks=False,
+                )
+            except:
+                logger.error(f"{claim.id} qualifier not added")
 
 
 def import_wikidata_item_to_local_wikibase(qid, site, local_site):
@@ -216,10 +223,17 @@ def import_wikidata_item_to_local_wikibase(qid, site, local_site):
     item_dict = item.get()
 
     local_item = find_or_create_local_item(item_dict, local_site, local_repo)
+
+    print('add statements begin...')
     add_statements_to_local_item(item_dict, repo, local_item, local_site, local_repo)
     id_label_dict = wd.create_id_label_dictionary(item, item.toJSON())
     local_id_label_dict = create_local_id_label_dictionary(local_item)
+    print('add statements end...')
 
+    # reload item after adding statements, then add sources/qualifiers
+    local_item = find_or_create_local_item(item_dict, local_site, local_repo)
+
+    print('add souces / qualifiers begin...')
     add_sources_and_qualifiers_to_local_item(
         item_dict,
         id_label_dict,
@@ -230,6 +244,7 @@ def import_wikidata_item_to_local_wikibase(qid, site, local_site):
         local_site,
         local_repo,
     )
+    print('add souces / qualifiers end...')
 
     lang = wd.get_claim_language(item_dict)
     label = item_dict["labels"][lang]
