@@ -165,6 +165,9 @@ def fetch_labels_for_ids_sqarql(ids):
 
 
 def fetch_and_format_labels_for_ids_sqarql(ids):
+    if len(ids) == 0:
+        return {}
+
     results = fetch_labels_for_ids_sqarql(ids)
     return format_wikidata_items_results(results)
 
