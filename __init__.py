@@ -22,3 +22,4 @@ from .scripts.utils.import_wikidata_records import (
     import_wikidata_item_to_local_wikibase,
     create_local_id_label_dictionary
 )
+from .scripts.utils.wiki_queries import wikidata_query
