@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 import pywikibot
 import time
-
+import re
 
 from scripts.utils.logger import logger
 from scripts.constants.languages import invalid_languages
@@ -37,12 +37,16 @@ def create_item(site, data, validation=True):
 
     repo = site.data_repository()
     new_item = pywikibot.ItemPage(repo)
-    edit_entity(new_item, data)
+    results = edit_entity(new_item, data)
 
+    # return new item if new item was created
     # id -1 means that item record was not created
     if new_item.id != "-1":
         logger.info(f"Item created: {new_item.id}")
         return new_item
+    # return results if it is is pywikibot ItemPage
+    elif hasattr(results, "data_item"):
+        return results
 
 
 def edit_labels(item, new_labels):
@@ -63,18 +67,29 @@ def edit_entity(item, data):
         item.editEntity(data, summary="Setting item data.")
         return item
     except pywikibot.exceptions.OtherPageSaveError as err:
-        if hasattr(err.reason, 'code') and err.reason.code == "not-recognized-language":
+        if hasattr(err.reason, "code") and err.reason.code == "not-recognized-language":
             langs = set()
             for key in data.keys():
                 langs.update(data[key].keys())
         else:
-            logger.error(f"Could not edit item: {err}")
+            # return existing item if item with label and description exists
+            text = "wikibase-validator-label-with-description-conflict"
+            if text in err.args:
+                matches = re.search(r"Item:(Q\d+)", err.args)
+
+                if matches:
+                    qid = matches.groups()[0]
+                    repo = item.data_repository
+                    return pywikibot.ItemPage(repo, qid)
+
+            logger.error(f"Could not edit item *: {err}")
     except:
         if "en" in data["labels"]:
             lang = "en"
         else:
             for k, v in data["labels"].items():
                 lang = k
+
         logger.error(f"Could not edit item: {data['labels'][lang]} {item.id}")
 
 
