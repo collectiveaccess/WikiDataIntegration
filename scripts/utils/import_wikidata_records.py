@@ -6,7 +6,7 @@ import scripts.utils.wiki_queries as wq
 import scripts.utils.wiki_serialization as ws
 
 
-def find_or_create_local_item(item_dict, local_site, local_repo):
+def find_or_create_local_item(item_dict, local_site, local_repo, limit_languages=False):
     lang = ws.get_claim_language(item_dict)
     label = item_dict["labels"][lang]
     description = item_dict["descriptions"][lang]
@@ -35,7 +35,12 @@ def find_or_create_local_item(item_dict, local_site, local_repo):
         item = pywikibot.ItemPage(local_repo, existing_id)
     # create new item
     else:
-        item = wd.import_item(local_site, item_dict, import_sitelinks=False)
+        item = wd.import_item(
+            local_site,
+            item_dict,
+            import_sitelinks=False,
+            limit_languages=limit_languages,
+        )
 
     return item
 
@@ -211,7 +216,7 @@ def add_sources_and_qualifiers_to_local_item(
 
 
 def import_wikidata_item_to_local_wikibase(
-    qid, site, local_site, add_statements=True, add_sources=True
+    qid, site, local_site, add_statements=True, add_sources=True, limit_languages=False
 ):
     pywikibot.config.put_throttle = 2
     local_repo = local_site.data_repository()
@@ -220,7 +225,9 @@ def import_wikidata_item_to_local_wikibase(
     item = pywikibot.ItemPage(repo, qid)
     item_dict = item.get()
 
-    local_item = find_or_create_local_item(item_dict, local_site, local_repo)
+    local_item = find_or_create_local_item(
+        item_dict, local_site, local_repo, limit_languages
+    )
 
     if add_statements:
         print("add statements begin...")
@@ -233,7 +240,9 @@ def import_wikidata_item_to_local_wikibase(
 
     if add_sources:
         # reload item after adding statements, then add sources/qualifiers
-        local_item = find_or_create_local_item(item_dict, local_site, local_repo)
+        local_item = find_or_create_local_item(
+            item_dict, local_site, local_repo, limit_languages
+        )
 
         print("add souces / qualifiers begin...")
         add_sources_and_qualifiers_to_local_item(

@@ -6,7 +6,7 @@ import time
 import re
 
 from scripts.utils.logger import logger
-from scripts.constants.languages import invalid_languages
+from scripts.constants.languages import invalid_languages, allowed_languages_short
 import scripts.utils.wiki_queries as wq
 import scripts.utils.wiki_serialization as ws
 
@@ -221,16 +221,21 @@ def remove_reference(item, statement_property, reference_property):
             logger.info(f"Remove sources: {claim.id} {reference_property}")
 
 
-def import_item(site, item_dict, import_sitelinks=True):
+def import_item(site, item_dict, import_sitelinks=True, limit_languages=False):
     """import an item record from wikidata."""
     ws.remove_identical_label_description(item_dict)
     data = {}
     for key, values in item_dict.items():
         if key in ["labels", "descriptions", "aliases"]:
             if len(values) > 0:
-                data[key] = {
-                    k: v for k, v in values.items() if k not in invalid_languages
-                }
+                if limit_languages:
+                    data[key] = {
+                        k: v for k, v in values.items() if k in allowed_languages_short
+                    }
+                else:
+                    data[key] = {
+                        k: v for k, v in values.items() if k not in invalid_languages
+                    }
         elif key == "sitelinks":
             if import_sitelinks and len(item_dict[key]) > 0:
                 data[key] = [{k: v.title} for k, v in item_dict[key].items()]

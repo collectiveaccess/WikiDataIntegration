@@ -348,4 +348,6 @@ allowed_languages = [
     "srn",
 ]
 
+allowed_languages_short = ["en"]
+
 invalid_languages = ["ms-arab", "pwn", "fa", "guw", "rmc", "en-us", "mcn", "pcm"]
