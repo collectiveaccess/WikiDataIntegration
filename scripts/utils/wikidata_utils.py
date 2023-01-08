@@ -49,6 +49,26 @@ def create_item(site, data, validation=True):
         return results
 
 
+def create_property(site, datatype, data, validation=True):
+    """create wikidata item (Q id record)."""
+    if validation:
+        validate_create_data(data, "labels")
+        validate_create_data(data, "descriptions")
+
+    repo = site.data_repository()
+    new_item = pywikibot.PropertyPage(repo, datatype=datatype)
+    results = edit_entity(new_item, data)
+
+    # return new item if new item was created
+    # id -1 means that item record was not created
+    if new_item.id != "-1":
+        logger.info(f"Item created: {new_item.id}")
+        return new_item
+    # return results if it is is pywikibot ItemPage
+    elif hasattr(results, "data_item"):
+        return results
+
+
 def edit_labels(item, new_labels):
     """Edit labels for a given item"""
     for lang, value in new_labels.items():
