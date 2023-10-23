@@ -144,7 +144,7 @@ def format_claim_data(claim, prop, id_label_dict, media_metadata, external_id_li
     # set ['data_value']['value'] based on claim type
     if claim.type == "wikibase-item":
         if claim.target:
-            id = claim.target.title()
+            id = claim.target.title().replace('Item:', '')
             data["data_value"]["value"]["label"] = id_label_dict[id]
             data["data_value"]["value"]["id"] = id
             data["data_value"]["value"]["url"] = claim.target.full_url()
