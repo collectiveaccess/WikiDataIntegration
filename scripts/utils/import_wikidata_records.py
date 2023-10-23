@@ -145,14 +145,14 @@ def add_source_to_wikidata_claim(
                 logger.error(f"Sources not saved: {local_claim.id}")
 
 
-def create_local_id_label_dictionary(local_item):
+def create_local_id_label_dictionary(local_item, wikibase_url):
     # can't use sparql to get labels for local wikibase qid because I can't
     # get sparql working. use api call to local wikibase to get labels.
     # api call doesn't work on federated properties.
     qids = wd.get_ids_for_item(
         local_item, local_item.toJSON(), include_pids=False, include_qids=True
     )
-    qid_dict = wq.fetch_and_format_labels_for_ids(qids, "http://whirl.mine.nu:8888")
+    qid_dict = wq.fetch_and_format_labels_for_ids(qids, wikibase_url)
 
     # use sparql query to wikidata.org to get pids
     pids = wd.get_ids_for_item(
@@ -216,7 +216,7 @@ def add_sources_and_qualifiers_to_local_item(
 
 
 def import_wikidata_item_to_local_wikibase(
-    qid, site, local_site, add_statements=True, add_sources=True, limit_languages=False
+    qid, site, local_site, local_site_url, add_statements=True, add_sources=True, limit_languages=False
 ):
     pywikibot.config.put_throttle = 2
     local_repo = local_site.data_repository()
@@ -235,7 +235,7 @@ def import_wikidata_item_to_local_wikibase(
             item_dict, repo, local_item, local_site, local_repo
         )
         id_label_dict = wd.create_id_label_dictionary(item, item.toJSON())
-        local_id_label_dict = create_local_id_label_dictionary(local_item)
+        local_id_label_dict = create_local_id_label_dictionary(local_item, local_site_url)
         print("add statements end...")
 
     if add_sources:
